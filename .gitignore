@@ -1,0 +1,5 @@
+# build dir
+out
+
+# ide dirs
+.vs
