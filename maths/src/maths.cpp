@@ -3,4 +3,4 @@
 
 #include <iostream>
 
-void maths::doSmth() { std::cout << "test output" << std::endl; }
+void doSmth() { std::cout << "test output" << std::endl; }

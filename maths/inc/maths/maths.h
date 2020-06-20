@@ -1,7 +1,5 @@
 #pragma once
 
-namespace maths {
+#include "matrix.h"
+#include "vector.h"
 
-void doSmth();
-
-}
