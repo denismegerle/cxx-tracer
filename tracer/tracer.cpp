@@ -2,18 +2,23 @@
 
 #include "tracer.h"
 #include "maths/maths.h"
-#include "maths/matrix.h"
-#include "maths/vector.h"
+
+#include "src/geometry/ray.h"
+#include "src/geometry/objects/object_base.h"
 
 #include "stb_image_write.h"
+#include "CImg.h"
 
 #include <array>
 #include <iostream>
 #include <fstream>
 
 using namespace std;
+using namespace raytrc;
 
-/*
+void test_main(void);
+
+    /*
 TODO:
 - create simple maths library and allow for use here
 - create objects (Ray, Intersection, ...) from the lecture
@@ -25,46 +30,17 @@ X shaders to use gpu? (nah)
 
 */
 int main() {
-  std::cout << "Maths version is " << MATHS_VERSION << std::endl;
+  int width = 500;
+  int height = 500;
 
-  std::array<float, 4> arr = {0.1f, 0.2f, 0.3f, 0.4f};
-  std::array<float, 4> arr2 = {0.2f, 0.3f, 0.4f, 0.5f};
-  std::array<float, 3> arr3 = {0.0f, 0.1f, 0.2f};
-  std::array<float, 3> arr4 = {0.2f, 0.4f, 0.6f};
-
-  gem::Vec3f vec3(arr3);
-  gem::Vec3f vec4(arr4);
-
-  gem::Vector<float, 4> vec(arr);
-  gem::Vector<float, 4> vec2(arr2);
-
-  std::array<std::array<float, 3>, 3> arr2d1 = {5, 8, 2, 8, 3, 1, 5, 3, 9};
-  gem::Matrix<float, 3> mat1(arr2d1);
-  std::array<std::array<float, 3>, 3> arr2d2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  gem::Matrix<float, 3> mat2(arr2d2);
-
-  std::cout << (vec + vec2).mult(2.0f) << std::endl;
-  std::cout << vec * 2.0f << std::endl;
-  std::cout << vec3 * vec4 * 2.0f << std::endl;
-  std::cout << vec3.norm(gem::Vector<float, 3>::NormType::MAX) << std::endl;
-
-  std::cout << mat1 + mat2 << std::endl;
-  std::cout << mat1 * 2.0f << std::endl;
-  std::cout << mat1.dot(mat2) << std::endl;
-  std::cout << mat1.dot(vec3) << std::endl;
-  std::cout << mat1.transpose() << std::endl;
-
-  const char *filename = "myfile.bmp";
-
-  int data[300] = { 200 };
-
-  stbi_write_bmp(filename, 10, 10, 3, &data);
-
-  ifstream image;
-  image.open("myfile.bmp");
+  /* TODO NEXT:
+    - create camera, sphere, plane stub objects
+  */
+  ObjectBase o;
 
   return 0;
 }
+
 
 /*
 
@@ -95,13 +71,16 @@ return color;
 
 ================================
 
-class Ray {
-vec3 origin, direction; // Startpunkt und Richtung des Strahls
-float t; // Strahlparameter
-void * object; // Zeiger auf evtl. getroffenes Objekt
-...
-};
+RAY CLASS -> needs generation of ray, casting of ray
+MATERIAL CLASS -> also implements different base materials statically, kinda like enums?
+INTERSECTION CLASS -> intersection
+LIGHTSOURCE, POINTLIGHT -> needs abstract computeDirectLight
 
+TODO
+OBJECT -> base of objects, needs abstract intersect(ray) method
+SPHERE
+PLANE
+CUBE (?)
 ================================
 
 for ( y = 0; y < height; y++ ) {
@@ -189,26 +168,45 @@ I += i.material->ks * I_L * powf( RdotV, i.material->n );
 
 ======================================
 
-some of the rest stuff...
-
-struct vec3 { // wir verwenden in der Übung die
-float x, y, z; // OpenGL Mathematics (GLM) Library
-...
-};
-class Material {
-vec3 ka, kd, ks; // Reflexionsparameter (hier: RGB, oder Spektrum)
-float n; // Phong-Exponent
-...
-};
-struct Intersection {
-vec3 p, n, v; // Position, Normale,
-// Vektor zur Kamera/zum Startpunkt des Strahls
-Material *material; // Reflexionsparameter
-};
-class PointLight : public LightSource {
-vec3 pos, // Position
-I_L; // Intensität der LQ (hier: RGB, oder Spektrum)
-...
-};
-
 */
+
+void test_main(void) {
+  std::cout << "Maths version is " << MATHS_VERSION << std::endl;
+
+  std::array<float, 4> arr = {0.1f, 0.2f, 0.3f, 0.4f};
+  std::array<float, 4> arr2 = {0.2f, 0.3f, 0.4f, 0.5f};
+  std::array<float, 3> arr3 = {0.0f, 0.1f, 0.2f};
+  std::array<float, 3> arr4 = {0.2f, 0.4f, 0.6f};
+
+  gem::Vec3f vec3(arr3);
+  gem::Vec3f vec4(arr4);
+
+  gem::Vector<float, 4> vec(arr);
+  gem::Vector<float, 4> vec2(arr2);
+
+  std::array<std::array<float, 3>, 3> arr2d1 = {5, 8, 2, 8, 3, 1, 5, 3, 9};
+  gem::Matrix<float, 3> mat1(arr2d1);
+  std::array<std::array<float, 3>, 3> arr2d2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  gem::Matrix<float, 3> mat2(arr2d2);
+
+  std::cout << (vec + vec2).mult(2.0f) << std::endl;
+  std::cout << vec * 2.0f << std::endl;
+  std::cout << vec3 * vec4 * 2.0f << std::endl;
+  std::cout << vec3.norm(gem::Vector<float, 3>::NormType::MAX) << std::endl;
+
+  std::cout << mat1 + mat2 << std::endl;
+  std::cout << mat1 * 2.0f << std::endl;
+  std::cout << mat1.dot(mat2) << std::endl;
+  std::cout << mat1.dot(vec3) << std::endl;
+  std::cout << mat1.transpose() << std::endl;
+
+  const char *filename = "myfile.bmp";
+
+  uint8_t data[7500] = {255};
+
+  stbi_write_bmp(filename, 50, 50, 3, &data);
+
+  cimg_library::CImg<uint8_t> cimage(data, 50, 50, 1, 3);
+  cimg_library::CImgDisplay disp;
+  disp.display(cimage).resize(false).move(100, 100).wait(5000);
+}
