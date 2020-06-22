@@ -1,6 +1,7 @@
 #pragma once
 
 #include "maths/maths.h"
+#include "src/geometry/objects/object_base.h"
 #include "src/geometry/intersection.h"
 #include "src/geometry/ray.h"
 
@@ -8,11 +9,11 @@ using namespace gem;
 
 namespace raytrc {
 
-class ObjectBase {
+class Plane : public ObjectBase {
  public:
-  Vec3f position;
+  Vec3f normal;
 
-  virtual Intersection intersect(Ray *ray) = 0;
+  Intersection intersect(Ray *ray);
 };
 
-}
+}  // namespace raytrc

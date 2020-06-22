@@ -1,24 +1,32 @@
 ﻿// tracer.cpp : Defines the entry point for the application.
 
 #include "tracer.h"
-#include "maths/maths.h"
-
-#include "src/geometry/ray.h"
-#include "src/geometry/objects/object_base.h"
-
-#include "stb_image_write.h"
-#include "CImg.h"
 
 #include <array>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+
+#include "CImg.h"
+#include "maths/maths.h"
+#include "src/geometry/objects/object_base.h"
+#include "src/geometry/ray.h"
+#include "stb_image_write.h"
 
 using namespace std;
 using namespace raytrc;
+using namespace gem;
 
 void test_main(void);
 
-    /*
+typedef struct PinholeCamera {
+  // TODO: actual class + normalize input vectors through constructor!
+  Vec3f position,
+      imagePaneNormal;  // pos + normal that points away from image pane
+  float focalLength;    // || pane - position ||
+  int width, height;    // width, height of image pane
+} Camera;
+
+/*
 TODO:
 - create simple maths library and allow for use here
 - create objects (Ray, Intersection, ...) from the lecture
@@ -29,18 +37,20 @@ TODO:
 X shaders to use gpu? (nah)
 
 */
-int main() {
-  int width = 500;
-  int height = 500;
 
+int main() {
   /* TODO NEXT:
     - create camera, sphere, plane stub objects
   */
-  ObjectBase o;
+  Camera cam;
+  cam.width = 500;
+  cam.height = 500;
+  cam.focalLength = 100;
+  cam.position = Vec3f(0.0f);
+  cam.imagePaneNormal = Vec3f();
 
   return 0;
 }
-
 
 /*
 
@@ -72,9 +82,9 @@ return color;
 ================================
 
 RAY CLASS -> needs generation of ray, casting of ray
-MATERIAL CLASS -> also implements different base materials statically, kinda like enums?
-INTERSECTION CLASS -> intersection
-LIGHTSOURCE, POINTLIGHT -> needs abstract computeDirectLight
+MATERIAL CLASS -> also implements different base materials statically, kinda
+like enums? INTERSECTION CLASS -> intersection LIGHTSOURCE, POINTLIGHT -> needs
+abstract computeDirectLight
 
 TODO
 OBJECT -> base of objects, needs abstract intersect(ray) method

@@ -3,6 +3,10 @@
 #include <assert.h>
 #include <array>
 #include <cmath>
+#include <initializer_list>
+#include <exception>
+#include <algorithm>
+
 #include "maths/vector.h"
 
 /* operator overloads for vectors */
@@ -44,10 +48,46 @@ Vector<T, S> operator*(const Vector<T, S> &a, const T &scalar) {
 using namespace gem;
 
 template <typename T, size_t S>
-Vector<T, S>::Vector(const std::array<T, S> val)
-    : length(std::size(val)), val(val) {
-  assert(S == std::size(val));
+Vector<T, S>::Vector(const std::array<T, S> value)
+    : length(std::size(value)), val(value) {
+  assert(S == std::size(value));
 };
+
+/*
+template <typename T, size_t S>
+Vector<T, S>::Vector(const T value)
+    : length(S) {
+  val = std::array<T, S>();
+  val.fill(value);
+};
+*/
+
+template <typename T, size_t S>
+template<typename... Ts>
+Vector<T, S>::Vector(const T value, const Ts... values)
+    : length(S) {
+  std::initializer_list<T> values_list = {values...};
+  auto init_with_one = [](std::array<T, S> *val, T value) {
+    *val = std::array<T, S>();
+    std::cout << value << std::endl;
+    val->fill(value);
+  };
+  auto init_with_s = [](std::array<T, S> *val, T value, std::initializer_list<T> values) {
+    *val = std::array<T, S>();
+    (*val)[0] = value;
+    std::copy(std::begin(values), std::end(values), std::begin(*val) + 1);
+  };
+
+  if (values_list.size() == 0)
+    init_with_one(&val, value);
+  else if (values_list.size() == S - 1)
+    init_with_s(&val, value, values_list);
+  else {
+    throw;  // for convenience, TODO: proper exceptions
+  }
+};
+
+
 
 /* mathematical functions on vectors */
 template <typename T, size_t S>

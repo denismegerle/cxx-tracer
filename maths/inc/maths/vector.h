@@ -46,7 +46,9 @@ class Vector {
   };
 
   Vector(){};
-  Vector(const std::array<T, S> val);
+  Vector(const std::array<T, S> value);
+  template<typename... Ts>
+  Vector(const T value, const Ts... values);
 
   /* mathematical functions on vectors */
   Vector<T, S> add(const Vector<T, S> other) const;

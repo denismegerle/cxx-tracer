@@ -31,10 +31,11 @@ FetchContent_MakeAvailable(cimglib)
 include_directories(${cimglib_SOURCE_DIR})
 
 
-
+file(GLOB_RECURSE PRIVATE_RAYTRC_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+include_directories(${PRIVATE_RAYTRC_SOURCE_FILES})
 
 ### TRACER BUILD
 # Add source to this project's executable.
-add_executable (tracer "tracer.cpp" "tracer.h" "src/light/point_light.h")
+add_executable (tracer "tracer.cpp" "tracer.h")
 
 target_link_libraries(tracer PRIVATE maths)
