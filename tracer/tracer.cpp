@@ -8,8 +8,12 @@
 
 #include "CImg.h"
 #include "maths/maths.h"
-#include "src/geometry/objects/object_base.h"
-#include "src/geometry/ray.h"
+#include "raytrc/geometry/cameras/pinhole_camera.h"
+#include "raytrc/geometry/objects/object_base.h"
+#include "raytrc/geometry/ray.h"
+#include "raytrc/world.h"
+#include "raytrc/geometry/objects/sphere.h"
+
 #include "stb_image_write.h"
 
 using namespace std;
@@ -17,14 +21,6 @@ using namespace raytrc;
 using namespace gem;
 
 void test_main(void);
-
-typedef struct PinholeCamera {
-  // TODO: actual class + normalize input vectors through constructor!
-  Vec3f position,
-      imagePaneNormal;  // pos + normal that points away from image pane
-  float focalLength;    // || pane - position ||
-  int width, height;    // width, height of image pane
-} Camera;
 
 /*
 TODO:
@@ -39,25 +35,53 @@ X shaders to use gpu? (nah)
 */
 
 int main() {
-  /* TODO NEXT:
-    - create camera, sphere, plane stub objects
-  */
-  Camera cam;
-  cam.width = 500;
-  cam.height = 500;
-  cam.focalLength = 100;
-  cam.position = Vec3f(0.0f);
-  cam.imagePaneNormal = Vec3f();
+  Vec3f camPosition(0.0f, 0.0f, 0.0f);
+  Vec3f camTarget(1.0f, 0.0f, 0.0f);
+  Vec3f camUp(0.0f, 0.0f, 1.0f);
+  int width = 1920;
+  int height = 1080;
+  float camDistanceToImagePane = 1.0f;
+  PinholeCamera cam(camPosition, camTarget, camUp, width, height,
+                    camDistanceToImagePane);
+  std::list<ObjectBase *> objects;
+  std::list<LightSource *> lightSources;
+
+  Sphere s(Vec3f(1.0f, 1.0f, 1.0f), nullptr, 1.0f);
+  Ray r(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f, 1.0f, 1.0f));
+
+  Intersection i;
+  std::cout << s.intersect(&r, &i) << std::endl;
+  std::cout << i.position << std::endl;
+
+  return 0;
+
+  World world(&cam, objects, lightSources);
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      /* TODO REMOVE; THIS IS ONLY FOR DEBUGGING */
+      if (x != 100 || y != 100) continue;
+
+      /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
+      Ray primaryRay = cam.generateRay(x, y);
+      Vec3f normalizedRayDirection = primaryRay.direction.normalize();
+
+      
+    }
+  }
 
   return 0;
 }
 
+Vec3f raytrace(Ray *ray) {
+  Vec3f color(0.0f);
+
+  /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
+
+  return NULL;
+}
 /*
 
-vec3 raytrace( Ray *ray, ... ) {
-vec3 color = 0.0f;
-
-Intersection i;
 if ( !cast( ray, FLOAT_MAX, &i ) )
 return color;
 
@@ -96,12 +120,6 @@ CUBE (?)
 for ( y = 0; y < height; y++ ) {
 for ( x = 0; x < width; x++ ) {
 
-HERE TO
-u = l + (r-l) * (x+0.5) / width;
-v = t + (b-t) * (y+0.5) / height;
-s = ...;
-d = normalize( s );
-HERE IS ACTUALLY RAY CASTING (GENERATE RAY(Ray *ray, int x, int y))
 
 HERE TO
 // finde nächsten Schnittpunkt

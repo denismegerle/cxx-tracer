@@ -53,15 +53,6 @@ Vector<T, S>::Vector(const std::array<T, S> value)
   assert(S == std::size(value));
 };
 
-/*
-template <typename T, size_t S>
-Vector<T, S>::Vector(const T value)
-    : length(S) {
-  val = std::array<T, S>();
-  val.fill(value);
-};
-*/
-
 template <typename T, size_t S>
 template<typename... Ts>
 Vector<T, S>::Vector(const T value, const Ts... values)
@@ -69,7 +60,6 @@ Vector<T, S>::Vector(const T value, const Ts... values)
   std::initializer_list<T> values_list = {values...};
   auto init_with_one = [](std::array<T, S> *val, T value) {
     *val = std::array<T, S>();
-    std::cout << value << std::endl;
     val->fill(value);
   };
   auto init_with_s = [](std::array<T, S> *val, T value, std::initializer_list<T> values) {
@@ -86,7 +76,6 @@ Vector<T, S>::Vector(const T value, const Ts... values)
     throw;  // for convenience, TODO: proper exceptions
   }
 };
-
 
 
 /* mathematical functions on vectors */
@@ -174,4 +163,22 @@ T Vector<T, S>::norm(const Vector<T, S>::NormType type) const {
   }
 
   return norm;
+}
+
+template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::cross(const Vector<T, S> other) const {
+  if (S != 3) throw; // we allow crossproducts only for 3d
+
+  Vector<T, S> result(
+    this->val[1] * other.val[2] - this->val[2] * other.val[1],
+    this->val[2] * other.val[0] - this->val[0] * other.val[2],
+    this->val[0] * other.val[1] - this->val[1] * other.val[0]
+  );
+  return result;
+}
+
+template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::normalize() const {
+  // ignoring the cast 0/0/0, TODO: throw exception or return 000?
+  return this->mult(1.0f / this->norm());
 }

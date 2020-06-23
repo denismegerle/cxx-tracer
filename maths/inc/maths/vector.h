@@ -58,15 +58,18 @@ class Vector {
   T dot(const Vector<T, S> other) const;
   T norm(const NormType type = NormType::EUCLIDEAN) const;
 
-  // Vec<T, S> cross(const Vec<T, S> other);
+  Vector<T, S> cross(const Vector<T, S> other) const;
+  Vector<T, S> normalize() const;
   // Vec<T, S> normal();
-  // Vec<T, S> normalize();
 
   // TODO: <outer product>, <reflect>, <refract>
-  // TODO: implement cross, normal, normalize
+  // TODO: implement normal
 
   /* friend functions that need privates from this class */
   friend Vector<T, S> Matrix<T, S>::dot(const Vector<T, S> other) const;
+
+  /* rest ... */
+  T &operator[](int idx) { return this->val[idx]; };
 };
 
 /* static vec class function definitions */	// TODO implement static stuff
@@ -97,6 +100,7 @@ Vec<T, S> normalize(const Vec<T, S> &a);
 */
 
 /* typedefs for commonly used vectors */
+typedef Vector<float, 2> Vec2f;
 typedef Vector<float, 3> Vec3f;
 typedef Vector<float, 4> Vec4f;
 typedef Vector<int, 3> Vec3i;
