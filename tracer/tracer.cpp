@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
+#include <omp.h>
 
 #include "CImg.h"
 #include "maths/maths.h"
@@ -59,6 +60,7 @@ int main() {
     return -1;
   }
 
+  #pragma omp parallel for
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
       frameBuffer[y * 1920 + x] = 0;
