@@ -5,6 +5,8 @@
 #include <array>
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <cstdlib>
 
 #include "CImg.h"
 #include "maths/maths.h"
@@ -31,6 +33,7 @@ TODO:
 - open png after prg finish
 - simple whitted style raytracing!
 X shaders to use gpu? (nah)
+- restrict cast to certain max length with parameter!
 
 */
 
@@ -43,42 +46,49 @@ int main() {
   float camDistanceToImagePane = 1.0f;
   PinholeCamera cam(camPosition, camTarget, camUp, width, height,
                     camDistanceToImagePane);
-  std::list<ObjectBase *> objects;
-  std::list<LightSource *> lightSources;
+  std::vector<ObjectBase *> objects;
+  std::vector<LightSource *> lightSources;
 
-  Sphere s(Vec3f(1.0f, 1.0f, 1.0f), nullptr, 1.0f);
-  Ray r(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f, 1.0f, 1.0f));
-
-  Intersection i;
-  std::cout << s.intersect(&r, &i) << std::endl;
-  std::cout << i.position << std::endl;
-
-  return 0;
+  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), nullptr, 0.5f * tan(M_PI / 4.0f)));
 
   World world(&cam, objects, lightSources);
+  
+  uint8_t *frameBuffer = (uint8_t*) malloc(1920 * 1080);
+  if (!frameBuffer) {
+    std::cout << "MEM ALLOC FAILED" << std::endl;
+    return -1;
+  }
 
   for (int y = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
-      /* TODO REMOVE; THIS IS ONLY FOR DEBUGGING */
-      if (x != 100 || y != 100) continue;
+      frameBuffer[y * 1920 + x] = 0;
 
       /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
       Ray primaryRay = cam.generateRay(x, y);
       Vec3f normalizedRayDirection = primaryRay.direction.normalize();
 
-      
+      Intersection i;
+      if (world.cast(&primaryRay, &i)) {
+        frameBuffer[y * 1920 + x] = 255;
+      }
     }
   }
 
+  cimg_library::CImg<uint8_t> cimage(frameBuffer, 1920, 1080, 1, 1);
+  cimg_library::CImgDisplay disp;
+  disp.display(cimage).resize(false).move(100, 100).wait(10000);
+
+  free(frameBuffer);
   return 0;
 }
 
-Vec3f raytrace(Ray *ray) {
+Vec3f raytrace(World *world, Ray *ray, int recursionDepth) {
   Vec3f color(0.0f);
 
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
+  Intersection i;
 
-  return NULL;
+  return Vec3f();
 }
 /*
 

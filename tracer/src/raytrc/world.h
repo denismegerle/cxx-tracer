@@ -1,26 +1,25 @@
 #pragma once
 
-#include <list>
+#include <vector>
 
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/light/light_source.h"
-
-// TODO add camera in here...
+#include "raytrc/geometry/cameras/camera.h"
 
 namespace raytrc {
 
 class World {
  public:
   Camera *camera;
-  std::list<ObjectBase*> objects;
-  std::list<LightSource*> lightSources;
+  std::vector<ObjectBase *> objects;
+  std::vector<LightSource *> lightSources;
 
   World(){};
-  World(Camera *camera, std::list<ObjectBase*> objects,
-        std::list<LightSource*> lightSources)
+  World(Camera *camera, std::vector<ObjectBase *> objects,
+        std::vector<LightSource *> lightSources)
       : camera(camera), objects(objects), lightSources(lightSources){};
   
-  bool cast(Ray *ray);
+  bool cast(Ray *ray, Intersection *intersection);
 };
 
 }
