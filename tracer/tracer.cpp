@@ -16,16 +16,22 @@
 #include "raytrc/geometry/ray.h"
 #include "raytrc/world.h"
 #include "raytrc/geometry/objects/sphere.h"
+#include "raytrc/light/point_light.h"
 
 #include "stb_image_write.h"
+
+constexpr auto PIXEL_WIDTH = 1600;
+constexpr auto PIXEL_HEIGHT = 900;
 
 using namespace std;
 using namespace raytrc;
 using namespace gem;
 
 void test_main(void);
+Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
+               int maxRecursionDepth);
 
-/*
+    /*
 TODO:
 - create simple maths library and allow for use here
 - create objects (Ray, Intersection, ...) from the lecture
@@ -42,60 +48,72 @@ int main() {
   Vec3f camPosition(0.0f, 0.0f, 0.0f);
   Vec3f camTarget(1.0f, 0.0f, 0.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
-  int width = 1920;
-  int height = 1080;
   float camDistanceToImagePane = 1.0f;
-  PinholeCamera cam(camPosition, camTarget, camUp, width, height,
+  PinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
                     camDistanceToImagePane);
   std::vector<ObjectBase *> objects;
   std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), nullptr, 0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), &(MATERIAL_BASIC), 0.5f * tan(M_PI / 4.0f)));
+  lightSources.push_back(new PointLight(Vec3f(2.0f, 0.0f, 2.0f), Vec3f(1.0f)));
 
   World world(&cam, objects, lightSources);
   
-  uint8_t *frameBuffer = (uint8_t*) malloc(1920 * 1080);
+  uint8_t *frameBuffer = (uint8_t *)malloc(PIXEL_WIDTH * PIXEL_HEIGHT);
   if (!frameBuffer) {
     std::cout << "MEM ALLOC FAILED" << std::endl;
     return -1;
   }
 
   #pragma omp parallel for
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      frameBuffer[y * 1920 + x] = 0;
+  for (int y = 0; y < PIXEL_HEIGHT; y++) {
+    for (int x = 0; x < PIXEL_WIDTH; x++) {
+      frameBuffer[y * PIXEL_WIDTH + x] = 0;
 
       /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
       Ray primaryRay = cam.generateRay(x, y);
-      Vec3f normalizedRayDirection = primaryRay.direction.normalize();
 
-      Intersection i;
-      if (world.cast(&primaryRay, &i)) {
-        frameBuffer[y * 1920 + x] = 255;
-      }
+      // raytrace recursively
+      Vec3f color = raytrace(&world, &primaryRay, 0, 3);
+
+
+      // DEBUG STUFF
+      if (color.norm() != 0.0f) frameBuffer[y * PIXEL_WIDTH + x] = 200;
     }
   }
 
-  cimg_library::CImg<uint8_t> cimage(frameBuffer, 1920, 1080, 1, 1);
+  cimg_library::CImg<uint8_t> cimage(frameBuffer, PIXEL_WIDTH, PIXEL_HEIGHT, 1,
+                                     1);
   cimg_library::CImgDisplay disp;
-  disp.display(cimage).resize(false).move(100, 100).wait(10000);
+  disp.display(cimage).resize(false).move(100, 100).wait(1000);
 
   free(frameBuffer);
   return 0;
 }
 
-Vec3f raytrace(World *world, Ray *ray, int recursionDepth) {
+Vec3f raytrace(World *world, Ray *ray, int recursionDepth, int maxRecursionDepth) {
   Vec3f color(0.0f);
 
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
   Intersection i;
+  if (!world->cast(ray, &i)) return color;
 
+  return Vec3f(200.0f);
+
+  /* 3. CALCULATE LIGHT AND SHADING */
+  // direct light from the light sources
+  for (auto light : world->lightSources) {
+    color = color + Vec3f(0.0f);
+  }
+
+  /*
+  TODO:
+  - reflection ray = 2 * (L * N) * N - L where L=vector to light, N normal 
+  
+  */
   return Vec3f();
 }
 /*
-
-if ( !cast( ray, FLOAT_MAX, &i ) )
-return color;
 
 for ( jede Lichtquelle )
 color += computeDirectLight( ... );
