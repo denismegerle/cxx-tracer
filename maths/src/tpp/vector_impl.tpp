@@ -182,3 +182,17 @@ Vector<T, S> Vector<T, S>::normalize() const {
   // ignoring the cast 0/0/0, TODO: throw exception or return 000?
   return this->mult(1.0f / this->norm());
 }
+
+template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left, const Vector<T, S> right) const {
+  std::array<T, S> clamped{};
+
+  for (int i = 0; i < this->length; i++) {
+    clamped[i] = this->val[i];
+
+    if (this->val[i] < left.val[i]) clamped[i] = left.val[i];
+    if (this->val[i] > right.val[i]) clamped[i] = right.val[i];
+  }
+  
+  return Vector<T, S>(clamped);
+}

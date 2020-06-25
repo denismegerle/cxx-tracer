@@ -22,6 +22,7 @@
 
 constexpr auto PIXEL_WIDTH = 1600;
 constexpr auto PIXEL_HEIGHT = 900;
+constexpr auto CHANNEL = 3;
 
 using namespace std;
 using namespace raytrc;
@@ -55,11 +56,12 @@ int main() {
   std::vector<LightSource *> lightSources;
 
   objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), &(MATERIAL_BASIC), 0.5f * tan(M_PI / 4.0f)));
-  lightSources.push_back(new PointLight(Vec3f(2.0f, 0.0f, 2.0f), Vec3f(1.0f)));
+  lightSources.push_back(
+      new PointLight(Vec3f(2.0f, 0.0f, -2.0f), Vec3f(1.0f, 0.0f, 0.0f)));
 
   World world(&cam, objects, lightSources);
   
-  uint8_t *frameBuffer = (uint8_t *)malloc(PIXEL_WIDTH * PIXEL_HEIGHT);
+  uint8_t *frameBuffer = (uint8_t *)malloc(CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT);
   if (!frameBuffer) {
     std::cout << "MEM ALLOC FAILED" << std::endl;
     return -1;
@@ -68,24 +70,30 @@ int main() {
   #pragma omp parallel for
   for (int y = 0; y < PIXEL_HEIGHT; y++) {
     for (int x = 0; x < PIXEL_WIDTH; x++) {
-      frameBuffer[y * PIXEL_WIDTH + x] = 0;
-
       /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
       Ray primaryRay = cam.generateRay(x, y);
 
       // raytrace recursively
       Vec3f color = raytrace(&world, &primaryRay, 0, 3);
 
+      for (int c = 0; c < CHANNEL; c++) {
+        
 
-      // DEBUG STUFF
-      if (color.norm() != 0.0f) frameBuffer[y * PIXEL_WIDTH + x] = 200;
+        // DEBUG STUFF
+        if (color.norm() != 0.0f) {
+          frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
+              color[c] * (255.0f / 3.0f);
+        } else {
+          frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] = 0;
+        }
+      }
     }
   }
 
   cimg_library::CImg<uint8_t> cimage(frameBuffer, PIXEL_WIDTH, PIXEL_HEIGHT, 1,
-                                     1);
+                                     CHANNEL);
   cimg_library::CImgDisplay disp;
-  disp.display(cimage).resize(false).move(100, 100).wait(1000);
+  disp.display(cimage).resize(false).move(100, 100).wait(10000);
 
   free(frameBuffer);
   return 0;
@@ -98,20 +106,21 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth, int maxRecursionDepth
   Intersection i;
   if (!world->cast(ray, &i)) return color;
 
-  return Vec3f(200.0f);
+ 
 
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources
   for (auto light : world->lightSources) {
-    color = color + Vec3f(0.0f);
+    color = color + light->computeDirectLight(&i);
   }
+  color = color.clamp(Vec3f(0.0f), Vec3f(3.0f));
+  return color;
 
   /*
   TODO:
   - reflection ray = 2 * (L * N) * N - L where L=vector to light, N normal 
   
   */
-  return Vec3f();
 }
 /*
 

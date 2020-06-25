@@ -70,6 +70,7 @@ class Vector {
 
   /* rest ... */
   T &operator[](int idx) { return this->val[idx]; };
+  Vector<T, S> clamp(const Vector<T, S> left, const Vector<T, S> right) const;
 };
 
 /* static vec class function definitions */	// TODO implement static stuff

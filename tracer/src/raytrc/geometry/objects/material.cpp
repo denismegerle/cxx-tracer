@@ -4,6 +4,6 @@
 /* predefined materials implementation ... */
 namespace raytrc {
 
-Material MATERIAL_BASIC(Vec3f(0.0f), Vec3f(0.0f), Vec3f(0.08), 10);
+Material MATERIAL_BASIC(Vec3f(0.7f), Vec3f(0.75f), Vec3f(0.75f), 10);
 
 }
