@@ -3,6 +3,7 @@
 
 using namespace raytrc;
 
+// needs to return closest intersection point!
 bool Sphere::intersect(Ray *ray, Intersection *intersection) { 
   float a = ray->direction * ray->direction;
   float b = 2.0f * ray->direction * (ray->origin - this->position);

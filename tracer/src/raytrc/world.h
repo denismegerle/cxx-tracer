@@ -20,6 +20,8 @@ class World {
       : camera(camera), objects(objects), lightSources(lightSources){};
   
   bool cast(Ray *ray, Intersection *intersection);
+  Vec3f deriveTransmissionFactor(Ray *ray);
+
 };
 
 }

@@ -55,9 +55,21 @@ int main() {
   std::vector<ObjectBase *> objects;
   std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), &(MATERIAL_BASIC), 0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), &(MATERIAL_METAL_RED),
+                               0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(new Sphere(Vec3f(2.0f, -2.0f, 0.0f),
+                               &(MATERIAL_SHINY_GREEN),
+                               0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(new Sphere(Vec3f(2.0f, 2.0f, 0.0f),
+                               &(MATERIAL_DIFFUSE_BLUE),
+                               0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, -1.0f),
+                               &(MATERIAL_DIFFUSE_BLUE),
+                               0.25f * tan(M_PI / 4.0f)));
   lightSources.push_back(
-      new PointLight(Vec3f(2.0f, 0.0f, -2.0f), Vec3f(1.0f, 0.0f, 0.0f)));
+      new PointLight(Vec3f(2.0f, 0.0f, -2.0f), Vec3f(1.0f, 1.0f, 1.0f)));
+  lightSources.push_back(
+      new PointLight(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f, 1.0f, 1.0f)));
 
   World world(&cam, objects, lightSources);
   
@@ -77,9 +89,6 @@ int main() {
       Vec3f color = raytrace(&world, &primaryRay, 0, 3);
 
       for (int c = 0; c < CHANNEL; c++) {
-        
-
-        // DEBUG STUFF
         if (color.norm() != 0.0f) {
           frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
               color[c] * (255.0f / 3.0f);
@@ -106,12 +115,10 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth, int maxRecursionDepth
   Intersection i;
   if (!world->cast(ray, &i)) return color;
 
- 
-
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources
   for (auto light : world->lightSources) {
-    color = color + light->computeDirectLight(&i);
+    color = color + light->computeDirectLight(world, &i);
   }
   color = color.clamp(Vec3f(0.0f), Vec3f(3.0f));
   return color;

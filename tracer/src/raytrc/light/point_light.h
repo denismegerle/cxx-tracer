@@ -14,7 +14,7 @@ class PointLight : public LightSource {
   PointLight(Vec3f position, Vec3f intensity)
       : position(position), intensity(intensity){};
 
-  Vec3f computeDirectLight(Intersection *intersection);
+  Vec3f computeDirectLight(World *world, Intersection *intersection);
 };
 
 }

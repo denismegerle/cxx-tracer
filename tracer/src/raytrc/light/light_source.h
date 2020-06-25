@@ -11,9 +11,11 @@ light source + point light here
 
 namespace raytrc {
 
+class World;
+// TODO add lightsource AMBIENTLIGHT, that simply adds val to each pixel (for convenience)
 class LightSource {
  public:
-  virtual Vec3f computeDirectLight(Intersection *intersection) = 0;
+  virtual Vec3f computeDirectLight(World *world, Intersection *intersection) = 0;
 };
 
 }  // namespace raytrc
