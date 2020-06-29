@@ -2,27 +2,30 @@
 
 #include "tracer.h"
 
+#include <omp.h>
+
 #include <array>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <cstdlib>
-#include <omp.h>
 
 #include "CImg.h"
 #include "maths/maths.h"
 #include "raytrc/geometry/cameras/pinhole_camera.h"
 #include "raytrc/geometry/objects/object_base.h"
-#include "raytrc/geometry/ray.h"
-#include "raytrc/world.h"
+#include "raytrc/geometry/objects/plane.h"
 #include "raytrc/geometry/objects/sphere.h"
+#include "raytrc/geometry/ray.h"
+#include "raytrc/light/ambient_light.h"
 #include "raytrc/light/point_light.h"
-
+#include "raytrc/world.h"
 #include "stb_image_write.h"
 
 constexpr auto PIXEL_WIDTH = 1600;
 constexpr auto PIXEL_HEIGHT = 900;
 constexpr auto CHANNEL = 3;
+constexpr auto REFLECTION_ON = true;
 
 using namespace std;
 using namespace raytrc;
@@ -32,7 +35,7 @@ void test_main(void);
 Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
                int maxRecursionDepth);
 
-    /*
+/*
 TODO:
 - create simple maths library and allow for use here
 - create objects (Ray, Intersection, ...) from the lecture
@@ -46,8 +49,8 @@ X shaders to use gpu? (nah)
 */
 
 int main() {
-  Vec3f camPosition(0.0f, 0.0f, 0.0f);
-  Vec3f camTarget(1.0f, 0.0f, 0.0f);
+  Vec3f camPosition(0.0f, 0.0f, 4.0f);
+  Vec3f camTarget(2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 1.0f;
   PinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
@@ -55,31 +58,35 @@ int main() {
   std::vector<ObjectBase *> objects;
   std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 0.0f), &(MATERIAL_METAL_RED),
+  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 2.0f), &(MATERIAL_METAL_RED),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(2.0f, -2.0f, 0.0f),
+  objects.push_back(new Sphere(Vec3f(2.0f, -2.0f, 2.0f),
                                &(MATERIAL_SHINY_GREEN),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(2.0f, 2.0f, 0.0f),
+  objects.push_back(new Sphere(Vec3f(2.0f, 2.0f, 2.0f),
                                &(MATERIAL_DIFFUSE_BLUE),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, -1.0f),
-                               &(MATERIAL_DIFFUSE_BLUE),
-                               0.25f * tan(M_PI / 4.0f)));
+
+  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
+                              &(MATERIAL_REFLECTIVE_SIMPLE),
+                              Vec3f(0.0f, 0.0f, 1.0f)));
+
   lightSources.push_back(
-      new PointLight(Vec3f(2.0f, 0.0f, -2.0f), Vec3f(1.0f, 1.0f, 1.0f)));
+      new PointLight(Vec3f(4.0f, 0.0f, 1.0f), Vec3f(1.0f, 1.0f, 1.0f)));
   lightSources.push_back(
-      new PointLight(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(1.0f, 1.0f, 1.0f)));
+      new PointLight(Vec3f(2.0f, 0.0f, 4.0f), Vec3f(1.0f, 1.0f, 1.0f)));
+  // lightSources.push_back(new AmbientLight(Vec3f(0.0f), Vec3f(0.1f)));
 
   World world(&cam, objects, lightSources);
-  
-  uint8_t *frameBuffer = (uint8_t *)malloc(CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT);
+
+  uint8_t *frameBuffer =
+      (uint8_t *)malloc(CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT);
   if (!frameBuffer) {
     std::cout << "MEM ALLOC FAILED" << std::endl;
     return -1;
   }
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (int y = 0; y < PIXEL_HEIGHT; y++) {
     for (int x = 0; x < PIXEL_WIDTH; x++) {
       /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
@@ -102,14 +109,18 @@ int main() {
   cimg_library::CImg<uint8_t> cimage(frameBuffer, PIXEL_WIDTH, PIXEL_HEIGHT, 1,
                                      CHANNEL);
   cimg_library::CImgDisplay disp;
-  disp.display(cimage).resize(false).move(100, 100).wait(10000);
+  disp.display(cimage).resize(false).move(100, 100).wait(50000);
 
   free(frameBuffer);
   return 0;
 }
 
-Vec3f raytrace(World *world, Ray *ray, int recursionDepth, int maxRecursionDepth) {
+Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
+               int maxRecursionDepth) {
   Vec3f color(0.0f);
+
+  // recursion stop condition
+  if (recursionDepth > maxRecursionDepth) return color;
 
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
   Intersection i;
@@ -120,24 +131,24 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth, int maxRecursionDepth
   for (auto light : world->lightSources) {
     color = color + light->computeDirectLight(world, &i);
   }
+
+  // reflection rays, only if material is actually reflective
+  if (i.material->kr.norm() > 0.0f &&
+      REFLECTION_ON) {  // TODO change to isReflective method
+    Ray reflect(
+        i.position + 10e-6f * i.normal,
+        -1.0f * ray->direction.reflect(
+                    i.normal));  // TODO constexpr eps over whole program
+    color =
+        color + i.material->kr.mult(raytrace(
+                    world, &reflect, recursionDepth + 1, maxRecursionDepth));
+  }
+
   color = color.clamp(Vec3f(0.0f), Vec3f(3.0f));
   return color;
-
-  /*
-  TODO:
-  - reflection ray = 2 * (L * N) * N - L where L=vector to light, N normal 
-  
-  */
 }
 /*
 
-for ( jede Lichtquelle )
-color += computeDirectLight( ... );
-if ( Fläche ist spiegelnd ) {
-// berechne Reflexionsstrahl
-Ray reflect = ...;
-color += i.kr * raytrace( reflect, ... );
-}
 if ( Fläche ist (semi-)transparent ) {
 // berechne Transmissionsstrahl
 Ray refract = ...;

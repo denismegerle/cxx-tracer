@@ -62,6 +62,8 @@ class Vector {
   Vector<T, S> normalize() const;
   // Vec<T, S> normal();
 
+  Vector<T, S> reflect(const Vector<T, S> normal) const;
+
   // TODO: <outer product>, <reflect>, <refract>
   // TODO: implement normal
 

@@ -5,7 +5,7 @@
 using namespace raytrc;
 using namespace gem;
 
-constexpr auto EPS_SHADOW = 10e-7;
+constexpr auto EPS_SHADOW = 10e-6;
 
 /*
 according to PHONG lighting model,
@@ -24,7 +24,6 @@ Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
       r.t < 1.0f) {       // obj between this and light blocks the light
     transmissionFactor = i.material->kt;
   }
-  // if (transmissionFactor.norm() <= 0.001f) return Vec3f(0.0f);   // no transmission = no light from this source
 
   /* calculate ambient part */
   Vec3f ambient = intersection->material->ka.mult(this->intensity);
@@ -51,6 +50,7 @@ Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
 
   float distanceFactor = 1.0f / (distance * distance);
 
-  return transmissionFactor.mult(ambient +
+  return ambient +
+         transmissionFactor.mult(
          distanceFactor * (diffuse + specular));
 }

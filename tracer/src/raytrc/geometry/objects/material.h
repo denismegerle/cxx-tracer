@@ -20,5 +20,6 @@ extern Material MATERIAL_BASIC;
 extern Material MATERIAL_METAL_RED;
 extern Material MATERIAL_SHINY_GREEN;
 extern Material MATERIAL_DIFFUSE_BLUE;
+extern Material MATERIAL_REFLECTIVE_SIMPLE;
 
 }  // namespace raytrc

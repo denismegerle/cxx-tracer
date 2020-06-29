@@ -184,6 +184,11 @@ Vector<T, S> Vector<T, S>::normalize() const {
 }
 
 template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::reflect(const Vector<T, S> normal) const {
+  return 2 * (*this * normal) * normal - *this;
+}
+
+template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left, const Vector<T, S> right) const {
   std::array<T, S> clamped{};
 

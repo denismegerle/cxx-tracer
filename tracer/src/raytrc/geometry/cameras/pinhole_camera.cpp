@@ -18,8 +18,8 @@ PinholeCamera::PinholeCamera(Vec3f position, Vec3f target, Vec3f up,
   this->aspect = static_cast<float>(pixelWidth) / pixelHeight;
 
   this->imagePaneNormal = (position - target).normalize();
-  this->imagePaneX = up.cross(this->imagePaneNormal).normalize();
-  this->imagePaneY = this->imagePaneNormal.cross(this->imagePaneX).normalize();
+  this->imagePaneX = this->imagePaneNormal.cross(up).normalize();
+  this->imagePaneY = this->imagePaneX.cross(this->imagePaneNormal).normalize();
   this->imagePaneHeight = 2 * tan(fov / 2.0f) * this->distanceToImagePane;
   this->imagePaneWidth = this->aspect * this->imagePaneHeight;
 }
@@ -34,10 +34,10 @@ Ray PinholeCamera::generateRay(int x, int y) {
     and with the given x, y / xtotal, ytotal the image to pane ratio
   */
   Vec2f paneTopLeft =
-      -(1.0f / 2.0f) * Vec2f(this->imagePaneWidth, this->imagePaneHeight);
+      (1.0f / 2.0f) * Vec2f(- this->imagePaneWidth, this->imagePaneHeight);
   Vec2f paneSize(this->imagePaneWidth, this->imagePaneHeight);
   Vec2f pixelScale((x + 0.5f) / this->pixelWidth,
-                   (y + 0.5f) / this->pixelHeight);
+                   - (y + 0.5f) / this->pixelHeight);
 
   Vec2f uv =
       paneTopLeft + paneSize.mult(pixelScale);  // here mult is elementwise!
@@ -45,5 +45,5 @@ Ray PinholeCamera::generateRay(int x, int y) {
   Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
                     this->distanceToImagePane * this->imagePaneNormal;
 
-  return Ray(this->position, imagePanePoint - this->position);
+  return Ray(this->position, imagePanePoint);
 }
