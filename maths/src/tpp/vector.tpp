@@ -1,11 +1,12 @@
 #pragma once
 
 #include <assert.h>
+
+#include <algorithm>
 #include <array>
 #include <cmath>
-#include <initializer_list>
 #include <exception>
-#include <algorithm>
+#include <initializer_list>
 
 #include "maths/vector.h"
 
@@ -33,12 +34,17 @@ Vector<T, S> operator-(const Vector<T, S> &a, const Vector<T, S> &b) {
 };
 
 template <typename T, size_t S>
+Vector<T, S> operator-(const Vector<T, S> &a) {
+  return a.negate();
+};
+
+template <typename T, size_t S>
 T operator*(const Vector<T, S> &a, const Vector<T, S> &b) {
   return a.dot(b);
 };
 
 template <typename T, size_t S>
-Vector<T, S>  operator*(const T &scalar, const Vector<T, S> &b) {
+Vector<T, S> operator*(const T &scalar, const Vector<T, S> &b) {
   return b.mult(scalar);
 };
 
@@ -56,15 +62,15 @@ Vector<T, S>::Vector(const std::array<T, S> values)
 };
 
 template <typename T, size_t S>
-template<typename... Ts>
-Vector<T, S>::Vector(const T value, const Ts... vals)
-    : length(S) {
+template <typename... Ts>
+Vector<T, S>::Vector(const T value, const Ts... vals) : length(S) {
   std::initializer_list<T> values_list = {vals...};
   auto init_with_one = [](std::array<T, S> *values, T value) {
     *values = std::array<T, S>();
     values->fill(value);
   };
-  auto init_with_s = [](std::array<T, S> *values, T value, std::initializer_list<T> vals) {
+  auto init_with_s = [](std::array<T, S> *values, T value,
+                        std::initializer_list<T> vals) {
     *values = std::array<T, S>();
     (*values)[0] = value;
     std::copy(std::begin(vals), std::end(vals), std::begin(*values) + 1);
@@ -78,7 +84,6 @@ Vector<T, S>::Vector(const T value, const Ts... vals)
     throw;  // for convenience, TODO: proper exceptions
   }
 };
-
 
 /* mathematical functions on vectors */
 template <typename T, size_t S>
@@ -101,6 +106,17 @@ Vector<T, S> Vector<T, S>::sub(const Vector<T, S> other) const {
   }
 
   return Vector<T, S>(diff);
+}
+
+template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::negate() const {
+  std::array<T, S> negation{};
+
+  for (int i = 0; i < this->length; i++) {
+    negation[i] = -this->values[i];
+  }
+
+  return Vector<T, S>(negation);
 }
 
 template <typename T, size_t S>
@@ -169,13 +185,12 @@ T Vector<T, S>::norm(const Vector<T, S>::NormType type) const {
 
 template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::cross(const Vector<T, S> other) const {
-  if (S != 3) throw; // we allow crossproducts only for 3d
+  if (S != 3) throw;  // we allow crossproducts only for 3d
 
   Vector<T, S> result(
       this->values[1] * other.values[2] - this->values[2] * other.values[1],
       this->values[2] * other.values[0] - this->values[0] * other.values[2],
-      this->values[0] * other.values[1] - this->values[1] * other.values[0]
-  );
+      this->values[0] * other.values[1] - this->values[1] * other.values[0]);
   return result;
 }
 
@@ -186,12 +201,8 @@ Vector<T, S> Vector<T, S>::normalize() const {
 }
 
 template <typename T, size_t S>
-Vector<T, S> Vector<T, S>::reflect(const Vector<T, S> normal) const {
-  return 2 * (*this * normal) * normal - *this;
-}
-
-template <typename T, size_t S>
-Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left, const Vector<T, S> right) const {
+Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left,
+                                 const Vector<T, S> right) const {
   std::array<T, S> clamped{};
 
   for (int i = 0; i < this->length; i++) {
@@ -200,6 +211,6 @@ Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left, const Vector<T, S> rig
     if (this->values[i] < left.values[i]) clamped[i] = left.values[i];
     if (this->values[i] > right.values[i]) clamped[i] = right.values[i];
   }
-  
+
   return Vector<T, S>(clamped);
 }

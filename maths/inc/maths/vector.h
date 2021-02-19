@@ -33,6 +33,7 @@ class Vector {
   /* mathematical functions on vectors */
   Vector<T, S> add(const Vector<T, S> other) const;
   Vector<T, S> sub(const Vector<T, S> other) const;
+  Vector<T, S> negate() const;
   Vector<T, S> mult(const Vector<T, S> other) const;
   Vector<T, S> mult(const T scalar) const;
   T dot(const Vector<T, S> other) const;
@@ -41,8 +42,6 @@ class Vector {
   Vector<T, S> cross(const Vector<T, S> other) const;
   Vector<T, S> normalize() const;
   // Vec<T, S> normal();
-
-  Vector<T, S> reflect(const Vector<T, S> normal) const;
 
   // TODO: <outer product>, <reflect>, <refract>
   // TODO: implement normal

@@ -22,20 +22,20 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 640;
-constexpr auto PIXEL_HEIGHT = 360;
+constexpr auto PIXEL_WIDTH = 1920;
+constexpr auto PIXEL_HEIGHT = 1080;
 constexpr auto CHANNEL = 3;
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
-constexpr auto MAX_RECURSION_DEPTH = 3;
+constexpr auto MAX_RECURSION_DEPTH = 5;
 
 using namespace std;
 using namespace raytrc;
 using namespace gem;
 
-void test_main(void);
 Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
                int maxRecursionDepth);
+float gamma_correct(float color, float gamma);
 
 /*
 TODO:
@@ -48,7 +48,8 @@ TODO:
 X shaders to use gpu? (nah)
 - restrict cast to certain max length with parameter!
 
-- make light source emit ambient, specular, diffuse light and use in phong calculation
+- make light source emit ambient, specular, diffuse light and use in phong
+calculation
 */
 
 int main() {
@@ -61,15 +62,16 @@ int main() {
   std::vector<ObjectBase *> objects;
   std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(-2.0f, 0.0f, 2.0f), &(Materials::GOLD),
+  objects.push_back(new Sphere(Vec3f(-2.0f, 0.0f, 2.0f),
+                               &(Materials::GLASS_SIMPLE),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(-2.0f, -2.0f, 2.0f), &(Materials::SILVER),
+  objects.push_back(new Sphere(Vec3f(-2.0f, -2.0f, 2.0f), &(Materials::BRONZE),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(-2.0f, 2.0f, 2.0f), &(Materials::BRONZE),
+  objects.push_back(new Sphere(Vec3f(-2.0f, 2.0f, 2.0f), &(Materials::GOLD),
                                0.5f * tan(M_PI / 4.0f)));
 
   objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
-                              &(Materials::MIRROR_SIMPLE),
+                              &(Materials::WHITE_RUBBER),
                               Vec3f(0.0f, 0.0f, 1.0f)));
   objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
                               &(Materials::REFLECTIVE_SIMPLE),
@@ -90,9 +92,8 @@ int main() {
                               Vec3f(1.0f, 0.0f, 0.0f)));
   */
 
-
   lightSources.push_back(
-      new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(10.0f, 10.0f, 10.0f)));
+      new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f, 2.0f, 2.0f)));
   // lightSources.push_back(
   //    new PointLight(Vec3f(-4.0f, 2.0f, 3.0f), Vec3f(0.5f, 0.5f, 0.5f)));
   // lightSources.push_back(new AmbientLight(Vec3f(0.0f), Vec3f(0.1f)));
@@ -118,7 +119,7 @@ int main() {
       for (int c = 0; c < CHANNEL; c++) {
         if (color.norm() != 0.0f) {
           frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
-              color[c] * (255.0f / 3.0f);
+              (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
         } else {
           frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] = 0;
         }
@@ -129,7 +130,8 @@ int main() {
   cimg_library::CImg<uint8_t> cimage(frameBuffer, PIXEL_WIDTH, PIXEL_HEIGHT, 1,
                                      CHANNEL);
   cimg_library::CImgDisplay disp;
-  disp.display(cimage).resize(false).move(100, 100).wait(50000);
+  disp.display(cimage).resize(false).move(100, 100).wait(20000);
+  cimage.save("raytraced.png");
 
   free(frameBuffer);
   return 0;
@@ -155,148 +157,31 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
   // reflection rays, only if material is actually reflective
   if (i.material->kr.norm() > 0.0f &&
       REFLECTION_ON) {  // TODO change to isReflective method
-    Ray reflect(
-        i.position + 10e-6f * i.normal,
-        -1.0f * ray->direction.reflect(
-                    i.normal));  // TODO constexpr eps over whole program
+    Ray reflect = ray->reflect(&i);
     color =
         color + i.material->kr.mult(raytrace(
                     world, &reflect, recursionDepth + 1, maxRecursionDepth));
   }
 
   if (i.material->kt.norm() > 0.0f && TRANSMISSION_ON) {
+    // for simplification, the assumption is: we either enter or leave a
+    // material (from/to air)
+    float theta_i_ = acos(ray->direction.normalize().dot(i.normal));
+    bool entering = theta_i_ > M_PI / 2.0f;
+
+    float eta_1 = entering ? Materials::AIR.eta : i.material->eta;
+    float eta_2 = entering ? i.material->eta : Materials::AIR.eta;
+    Vec3f kt = entering ? i.material->kt : Materials::AIR.kt;
+
+    Ray refract = ray->refract(&i, eta_1, eta_2);
+
+    color = color + kt.mult(raytrace(world, &refract, recursionDepth + 1,
+                                     maxRecursionDepth));
   }
 
-  color = color.clamp(Vec3f(0.0f), Vec3f(3.0f));
   return color;
 }
-/*
-if ( Fläche ist (semi-)transparent ) {
-// berechne Transmissionsstrahl
-Ray refract = ...;
-if ( Totalreflexion )
-color += i.kr * raytrace( reflect, ... );
-else
-color += i.kt * raytrace( refract, ... );
-}
-return color;
-}
-================================
-RAY CLASS -> needs generation of ray, casting of ray
-MATERIAL CLASS -> also implements different base materials statically, kinda
-like enums? INTERSECTION CLASS -> intersection LIGHTSOURCE, POINTLIGHT -> needs
-abstract computeDirectLight
-TODO
-OBJECT -> base of objects, needs abstract intersect(ray) method
-SPHERE
-PLANE
-CUBE (?)
-================================
-for ( y = 0; y < height; y++ ) {
-for ( x = 0; x < width; x++ ) {
-HERE TO
-// finde nächsten Schnittpunkt
-intersection = NULL;
-float t = FLOAT_MAX;
-for ( each object ) {
-t‘ = intersect( object, e, d );
-if ( t‘ > 0 && t‘ < t ) {
-intersection = object;
-t = t‘;
-} }
-// Beleuchtungsberechnung
-if ( intersection != NULL ) {
-computeDirectLight ...
-}
-HERE IS ACTUALLY RAYTRACE(...)!
-} }
-===============================
-bool cast(Ray *ray, float maxDist)  {
-// finde nächsten Schnittpunkt
-intersection = NULL;
-float t = FLOAT_MAX;
-for ( each object ) {
-t‘ = intersect( object, e, d );
-if ( t‘ > 0 && t‘ < t ) {
-intersection = object;
-t = t‘;
-} }
-}
-=======================================
-compute direct light (light -> obj) with shadows...
-vec3 PointLight::computeDirectLight( const Intersection &i, ... ) {
-// ambienter Term
-vec3 I = i.material->ka * I_L;
-vec3 L = pos - i.p;
-// Schattenstrahl
-float dist2Light = length( L );
-for ( each object ) {
-t‘ = intersect( object, i.p, L );
-if ( t‘ > 0 && t‘ < dist2Light )
-return I;
-}
-...
-};
-=====================================
-direct light computation with phong lightning model
-vec3 PointLight::computeDirectLight( const Intersection &i, ... )
-{
-// ambienter Term
-vec3 I = i.material->ka * I_L;
-// hier: Punktlichtquelle
-vec3 L = normalize( pos - i.p );
-float NdotL = dot( i.n, L );
-if ( NdotL > 0 ) {
-// diffuser Term
-I += i.material->kd * I_L * NdotL;
-// spekularer Term
-vec3 R = 2.0f * i.n * NdotL – L;
-float RdotV = dot( R, V );
-if ( RdotV > 0 ) {
-I += i.material->ks * I_L * powf( RdotV, i.material->n );
-}
-}
-};
-======================================
-*/
 
-void test_main(void) {
-  std::cout << "Maths version is " << MATHS_VERSION << std::endl;
-
-  std::array<float, 4> arr = {0.1f, 0.2f, 0.3f, 0.4f};
-  std::array<float, 4> arr2 = {0.2f, 0.3f, 0.4f, 0.5f};
-  std::array<float, 3> arr3 = {0.0f, 0.1f, 0.2f};
-  std::array<float, 3> arr4 = {0.2f, 0.4f, 0.6f};
-
-  gem::Vec3f vec3(arr3);
-  gem::Vec3f vec4(arr4);
-
-  gem::Vector<float, 4> vec(arr);
-  gem::Vector<float, 4> vec2(arr2);
-
-  std::array<std::array<float, 3>, 3> arr2d1 = {5, 8, 2, 8, 3, 1, 5, 3, 9};
-  gem::Matrix<float, 3> mat1(arr2d1);
-  std::array<std::array<float, 3>, 3> arr2d2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  gem::Matrix<float, 3> mat2(arr2d2);
-
-  std::cout << (vec + vec2).mult(2.0f) << std::endl;
-  std::cout << vec * 2.0f << std::endl;
-  std::cout << vec3 * vec4 * 2.0f << std::endl;
-  std::cout << vec3.norm(gem::Vector<float, 3>::NormType::MAX) << std::endl;
-
-  std::cout << mat1 + mat2 << std::endl;
-  std::cout << mat1 * 2.0f << std::endl;
-  std::cout << mat1.dot(mat2) << std::endl;
-  std::cout << mat1.dot(vec3) << std::endl;
-  std::cout << mat1.transpose() << std::endl;
-
-  const char *filename = "myfile.bmp";
-
-  uint8_t data[7500] = {255};
-
-  stbi_write_bmp(filename, 50, 50, 3, &data);
-
-  cimg_library::CImg<uint8_t> cimage(data, 50, 50, 1, 3);
-  cimg_library::CImgDisplay disp;
-  disp.display(cimage).resize(false).move(100, 100).wait(5000);
+float gamma_correct(float color, float gamma) {
+  return min(1.0f, pow(color, 1.0f / gamma));
 }
