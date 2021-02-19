@@ -22,10 +22,12 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 1600;
-constexpr auto PIXEL_HEIGHT = 900;
+constexpr auto PIXEL_WIDTH = 640;
+constexpr auto PIXEL_HEIGHT = 360;
 constexpr auto CHANNEL = 3;
 constexpr auto REFLECTION_ON = true;
+constexpr auto TRANSMISSION_ON = true;
+constexpr auto MAX_RECURSION_DEPTH = 3;
 
 using namespace std;
 using namespace raytrc;
@@ -46,35 +48,53 @@ TODO:
 X shaders to use gpu? (nah)
 - restrict cast to certain max length with parameter!
 
+- make light source emit ambient, specular, diffuse light and use in phong calculation
 */
 
 int main() {
-  Vec3f camPosition(0.0f, 0.0f, 4.0f);
-  Vec3f camTarget(2.0f, 0.0f, 2.0f);
+  Vec3f camPosition(-4.0f, 0.0f, 3.0f);
+  Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
-  float camDistanceToImagePane = 1.0f;
+  float camDistanceToImagePane = 0.25f;
   PinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
                     camDistanceToImagePane);
   std::vector<ObjectBase *> objects;
   std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(2.0f, 0.0f, 2.0f), &(MATERIAL_METAL_RED),
+  objects.push_back(new Sphere(Vec3f(-2.0f, 0.0f, 2.0f), &(Materials::GOLD),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(2.0f, -2.0f, 2.0f),
-                               &(MATERIAL_SHINY_GREEN),
+  objects.push_back(new Sphere(Vec3f(-2.0f, -2.0f, 2.0f), &(Materials::SILVER),
                                0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(2.0f, 2.0f, 2.0f),
-                               &(MATERIAL_DIFFUSE_BLUE),
+  objects.push_back(new Sphere(Vec3f(-2.0f, 2.0f, 2.0f), &(Materials::BRONZE),
                                0.5f * tan(M_PI / 4.0f)));
 
   objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
-                              &(MATERIAL_REFLECTIVE_SIMPLE),
+                              &(Materials::MIRROR_SIMPLE),
                               Vec3f(0.0f, 0.0f, 1.0f)));
+  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
+                              &(Materials::REFLECTIVE_SIMPLE),
+                              Vec3f(-1.0f, 0.0f, 0.0f)));
+  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
+                              &(Materials::WHITE_RUBBER),
+                              Vec3f(1.0f, 0.0f, 0.0f)));
+  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 6.0f),
+                              &(Materials::WHITE_RUBBER),
+                              Vec3f(0.0f, 0.0f, -1.0f)));
+
+  /*
+  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
+                              &(Materials::WHITE_RUBBER),
+                              Vec3f(1.0f, 0.0f, 0.0f)));
+  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
+                              &(Materials::WHITE_RUBBER),
+                              Vec3f(1.0f, 0.0f, 0.0f)));
+  */
+
 
   lightSources.push_back(
-      new PointLight(Vec3f(4.0f, 0.0f, 1.0f), Vec3f(1.0f, 1.0f, 1.0f)));
-  lightSources.push_back(
-      new PointLight(Vec3f(2.0f, 0.0f, 4.0f), Vec3f(1.0f, 1.0f, 1.0f)));
+      new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(10.0f, 10.0f, 10.0f)));
+  // lightSources.push_back(
+  //    new PointLight(Vec3f(-4.0f, 2.0f, 3.0f), Vec3f(0.5f, 0.5f, 0.5f)));
   // lightSources.push_back(new AmbientLight(Vec3f(0.0f), Vec3f(0.1f)));
 
   World world(&cam, objects, lightSources);
@@ -93,7 +113,7 @@ int main() {
       Ray primaryRay = cam.generateRay(x, y);
 
       // raytrace recursively
-      Vec3f color = raytrace(&world, &primaryRay, 0, 3);
+      Vec3f color = raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
 
       for (int c = 0; c < CHANNEL; c++) {
         if (color.norm() != 0.0f) {
@@ -144,11 +164,13 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
                     world, &reflect, recursionDepth + 1, maxRecursionDepth));
   }
 
+  if (i.material->kt.norm() > 0.0f && TRANSMISSION_ON) {
+  }
+
   color = color.clamp(Vec3f(0.0f), Vec3f(3.0f));
   return color;
 }
 /*
-
 if ( Fläche ist (semi-)transparent ) {
 // berechne Transmissionsstrahl
 Ray refract = ...;
@@ -159,25 +181,19 @@ color += i.kt * raytrace( refract, ... );
 }
 return color;
 }
-
 ================================
-
 RAY CLASS -> needs generation of ray, casting of ray
 MATERIAL CLASS -> also implements different base materials statically, kinda
 like enums? INTERSECTION CLASS -> intersection LIGHTSOURCE, POINTLIGHT -> needs
 abstract computeDirectLight
-
 TODO
 OBJECT -> base of objects, needs abstract intersect(ray) method
 SPHERE
 PLANE
 CUBE (?)
 ================================
-
 for ( y = 0; y < height; y++ ) {
 for ( x = 0; x < width; x++ ) {
-
-
 HERE TO
 // finde nächsten Schnittpunkt
 intersection = NULL;
@@ -193,11 +209,8 @@ if ( intersection != NULL ) {
 computeDirectLight ...
 }
 HERE IS ACTUALLY RAYTRACE(...)!
-
 } }
-
 ===============================
-
 bool cast(Ray *ray, float maxDist)  {
 // finde nächsten Schnittpunkt
 intersection = NULL;
@@ -209,11 +222,8 @@ intersection = object;
 t = t‘;
 } }
 }
-
 =======================================
-
 compute direct light (light -> obj) with shadows...
-
 vec3 PointLight::computeDirectLight( const Intersection &i, ... ) {
 // ambienter Term
 vec3 I = i.material->ka * I_L;
@@ -227,11 +237,8 @@ return I;
 }
 ...
 };
-
 =====================================
-
 direct light computation with phong lightning model
-
 vec3 PointLight::computeDirectLight( const Intersection &i, ... )
 {
 // ambienter Term
@@ -250,9 +257,7 @@ I += i.material->ks * I_L * powf( RdotV, i.material->n );
 }
 }
 };
-
 ======================================
-
 */
 
 void test_main(void) {

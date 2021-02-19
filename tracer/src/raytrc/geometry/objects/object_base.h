@@ -12,10 +12,10 @@ namespace raytrc {
 class ObjectBase {
  public:
   Vec3f position;
-  Material *material;
+  const Material *material;
 
   ObjectBase(){};
-  ObjectBase(Vec3f position, Material *material) : position(position), material(material){};
+  ObjectBase(Vec3f position, const Material *material) : position(position), material(material){};
 
   /* calculates closest intersection in positive direction */
   virtual bool intersect(Ray *ray, Intersection *intersection) = 0;

@@ -16,10 +16,28 @@ struct Material {
 };
 
 /* predefined materials ... */
-extern Material MATERIAL_BASIC;
-extern Material MATERIAL_METAL_RED;
-extern Material MATERIAL_SHINY_GREEN;
-extern Material MATERIAL_DIFFUSE_BLUE;
-extern Material MATERIAL_REFLECTIVE_SIMPLE;
+class Materials {
+ public:
+  static const int IX = 5;
+  static const Material METAL_RED;
+  static const Material SHINY_GREEN;
+  static const Material DIFFUSE_BLUE;
+  static const Material REFLECTIVE_SIMPLE;
+  static const Material MIRROR_SIMPLE;
+
+  /* materials from devernay (http://devernay.free.fr/cours/opengl/materials.html) */
+  static const Material EMERALD;
+  static const Material RUBY;
+  static const Material BRONZE;
+  static const Material CHROME;
+  static const Material COPPER;
+  static const Material GOLD;
+  static const Material SILVER;
+  static const Material CYAN_PLASTIC;
+  static const Material YELLOW_PLASTIC;
+  static const Material BLACK_RUBBER;
+  static const Material WHITE_RUBBER;
+
+};
 
 }  // namespace raytrc

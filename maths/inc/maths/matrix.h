@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <iostream>
 
 namespace gem {
 
@@ -13,37 +14,6 @@ class Vector;        // header would be circular dependency
 /// </summary>
 template <typename T, size_t S>
 class Matrix {
- private:
-  size_t length;
-  std::array<std::array<T, S>, S> val;
-
-  /* operator overloads for vectors */
-  template <typename T, size_t S>
-  friend std::ostream &operator<<(std::ostream &strm, const Matrix<T, S> &mat);
-
-  template <typename T, size_t S>
-  friend Matrix<T, S> operator+(const Matrix<T, S> &a, const Matrix<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Matrix<T, S> operator-(const Matrix<T, S> &a, const Matrix<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Matrix<T, S> operator*(const Matrix<T, S> &a, const Matrix<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Matrix<T, S> operator*(const T &scalar, const Matrix<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Matrix<T, S> operator*(const Matrix<T, S> &a, const T &scalar);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator*(const Vector<T, S> &a, const Matrix<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator*(const Matrix<T, S> &a, const Vector<T, S> &b);
-
-  // TODO / (inverse mult) implementieren
-
  public:
   enum class NormType {
     EUCLIDEAN,
@@ -51,8 +21,11 @@ class Matrix {
     MAX,
   };
 
-  Matrix(std::array<std::array<T, S>, S> val);
-  // TODO: implement diag, I, ... initialization
+  size_t length;
+  std::array<std::array<T, S>, S> values;
+
+  Matrix(std::array<std::array<T, S>, S> values);
+  // TODO: implement diag, I, ... initialization, inverse of matrix
 
   /* mathematical functions on matrices */
   Matrix<T, S> add(const Matrix<T, S> other) const;
@@ -72,6 +45,6 @@ class Matrix {
   // Vec<T, S> normalize();
 };
 
-#include "matrix_impl.tpp"
-
 }  // namespace gem
+
+#include "matrix.tpp"

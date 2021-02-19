@@ -14,7 +14,7 @@ class Plane : public ObjectBase {
   Vec3f normal;
 
   Plane(){};
-  Plane(Vec3f position, Material *material, Vec3f normal)
+  Plane(Vec3f position, const Material *material, Vec3f normal)
       : ObjectBase(position, material), normal(normal.normalize()){};
 
   bool intersect(Ray *ray, Intersection *intersection);

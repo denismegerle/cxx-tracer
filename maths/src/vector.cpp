@@ -11,6 +11,4 @@ Vector<T, S> add(const Vector<T, S> &a, const Vector<T, S> &b) {
   return a;
 };
 
-
-
 // TODO: add, sub, dot, (elementwise) mult, norm, normalize, <outer product>, normal, cross, <reflect>, <refract>

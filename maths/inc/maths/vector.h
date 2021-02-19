@@ -14,29 +14,6 @@ class Matrix;        // header would be circular dependency
 /// </summary>
 template <typename T, size_t S>
 class Vector {
- private:
-  size_t length;
-  std::array<T, S> val;
-
-  /* operator overloads for vectors */
-  template <typename T, size_t S>
-  friend std::ostream &operator<<(std::ostream &strm, const Vector<T, S> &vec);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator+(const Vector<T, S> &a, const Vector<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator-(const Vector<T, S> &a, const Vector<T, S> &b);
-
-  template <typename T, size_t S>
-  friend T operator*(const Vector<T, S> &a, const Vector<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator*(const T &scalar, const Vector<T, S> &b);
-
-  template <typename T, size_t S>
-  friend Vector<T, S> operator*(const Vector<T, S> &a, const T &scalar);
-
  public:
   enum class NormType {  // TODO throw this into another file, make it
                          // standalone
@@ -44,6 +21,9 @@ class Vector {
     TAXICAB,
     MAX,
   };
+
+  size_t length;
+  std::array<T, S> values;
 
   Vector(){};
   Vector(const std::array<T, S> value);
@@ -71,7 +51,7 @@ class Vector {
   friend Vector<T, S> Matrix<T, S>::dot(const Vector<T, S> other) const;
 
   /* rest ... */
-  T &operator[](int idx) { return this->val[idx]; };
+  T &operator[](int idx) { return this->values[idx]; };
   Vector<T, S> clamp(const Vector<T, S> left, const Vector<T, S> right) const;
 };
 
@@ -109,6 +89,6 @@ typedef Vector<float, 4> Vec4f;
 typedef Vector<int, 3> Vec3i;
 typedef Vector<int, 3> Vec3i;
 
-#include "vector_impl.tpp"
-
 }  // namespace gem
+
+#include "vector.tpp"
