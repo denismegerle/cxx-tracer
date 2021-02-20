@@ -22,12 +22,14 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 640;
-constexpr auto PIXEL_HEIGHT = 360;
+constexpr auto PIXEL_WIDTH = 1920;
+constexpr auto PIXEL_HEIGHT = 1080;
 constexpr auto CHANNEL = 3;
+constexpr auto N_SUPERSAMPLES = 10;
+constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
-constexpr auto MAX_RECURSION_DEPTH = 5;
+constexpr auto MAX_RECURSION_DEPTH = 3;
 
 using namespace std;
 using namespace raytrc;
@@ -53,75 +55,68 @@ calculation
 */
 
 int main() {
+  /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 0.25f;
   PinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
                     camDistanceToImagePane);
-  std::vector<ObjectBase *> objects;
-  std::vector<LightSource *> lightSources;
 
-  objects.push_back(new Sphere(Vec3f(-2.0f, 0.0f, 2.0f),
-                               &(Materials::GLASS_SIMPLE),
-                               0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(-2.0f, -2.0f, 2.0f), &(Materials::BRONZE),
-                               0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(new Sphere(Vec3f(-2.0f, 2.0f, 2.0f), &(Materials::GOLD),
-                               0.5f * tan(M_PI / 4.0f)));
+  /* ********** WORLD CREATION ********** */
+  std::vector<shared_ptr<ObjectBase>> objects;
+  std::vector<shared_ptr<LightSource>> lightSources;
 
-  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
-                              &(Materials::WHITE_RUBBER),
-                              Vec3f(0.0f, 0.0f, 1.0f)));
-  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 0.0f),
-                              &(Materials::REFLECTIVE_SIMPLE),
-                              Vec3f(-1.0f, 0.0f, 0.0f)));
-  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
-                              &(Materials::WHITE_RUBBER),
-                              Vec3f(1.0f, 0.0f, 0.0f)));
-  objects.push_back(new Plane(Vec3f(0.0f, 0.0f, 6.0f),
-                              &(Materials::WHITE_RUBBER),
-                              Vec3f(0.0f, 0.0f, -1.0f)));
+  objects.push_back(make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f),
+                                        &Materials::GLASS_SIMPLE,
+                                        0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(make_shared<Sphere>(
+      Vec3f(-2.0f, -2.0f, 2.0f), &Materials::BRONZE, 0.5f * tan(M_PI / 4.0f)));
+  objects.push_back(make_shared<Sphere>(
+      Vec3f(-2.0f, 2.0f, 2.0f), &Materials::GOLD, 0.5f * tan(M_PI / 4.0f)));
 
-  /*
-  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
-                              &(Materials::WHITE_RUBBER),
-                              Vec3f(1.0f, 0.0f, 0.0f)));
-  objects.push_back(new Plane(Vec3f(5.0f, 0.0f, 0.0f),
-                              &(Materials::WHITE_RUBBER),
-                              Vec3f(1.0f, 0.0f, 0.0f)));
-  */
+  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
+                                       &Materials::WHITE_RUBBER,
+                                       Vec3f(0.0f, 0.0f, 1.0f)));
+  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
+                                       &Materials::REFLECTIVE_SIMPLE,
+                                       Vec3f(-1.0f, 0.0f, 0.0f)));
+  objects.push_back(make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f),
+                                       &Materials::WHITE_RUBBER,
+                                       Vec3f(1.0f, 0.0f, 0.0f)));
+  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f),
+                                       &Materials::WHITE_RUBBER,
+                                       Vec3f(0.0f, 0.0f, -1.0f)));
 
-  lightSources.push_back(new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f),
-                                        Vec3f(2.0f), Vec3f(3.0f)));
-  //lightSources.push_back(new PointLight(Vec3f(-4.0f, -2.0f, 1.0f), Vec3f(0.4f),
-  //                                      Vec3f(1.0f), Vec3f(2.0f)));
-  // lightSources.push_back(new AmbientLight(Vec3f(0.0f), Vec3f(0.1f)));
+  lightSources.push_back(make_shared<PointLight>(
+      Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f), Vec3f(2.0f), Vec3f(3.0f)));
 
   World world(&cam, objects, lightSources);
 
-  uint8_t *frameBuffer =
-      (uint8_t *)malloc(CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT);
-  if (!frameBuffer) {
-    std::cout << "MEM ALLOC FAILED" << std::endl;
-    return -1;
-  }
+  /* ********** RT CODE ********** */
+  uint8_t *frameBuffer = new uint8_t[CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT];
 
 #pragma omp parallel for
   for (int y = 0; y < PIXEL_HEIGHT; y++) {
     for (int x = 0; x < PIXEL_WIDTH; x++) {
-      /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
-      Ray primaryRay = cam.generateRay(x, y);
+      Vec3f color(0.0f);
+      for (int i = 0; i < N_SUPERSAMPLES; i++) {
+        /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
+        Ray primaryRay = cam.generateRay(x, y, SUPERSAMPLING_VARIANCE);
 
-      // raytrace recursively
-      Vec3f color = raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
+        // raytrace recursively
+        color =
+            color + (1.0f / N_SUPERSAMPLES) *
+                        raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
 
-      for (int c = 0; c < CHANNEL; c++) {
-        if (color.norm() != 0.0f) {
-          frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
-              (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
-        } else {
-          frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] = 0;
+        for (int c = 0; c < CHANNEL; c++) {
+          if (color.norm() != 0.0f) {
+            frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
+                (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
+          } else {
+            frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
+                0;
+          }
         }
       }
     }
@@ -133,7 +128,7 @@ int main() {
   disp.display(cimage).resize(false).move(100, 100).wait(20000);
   cimage.save("raytraced.png");
 
-  free(frameBuffer);
+  delete[] frameBuffer;
   return 0;
 }
 
@@ -167,16 +162,22 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
     // for simplification, the assumption is: we either enter or leave a
     // material (from/to air)
     float theta_i_ = acos(ray->direction.normalize().dot(i.normal));
+    float theta_i = (theta_i_ > M_PI / 2.0f) ? M_PI - theta_i_ : theta_i_;
     bool entering = theta_i_ > M_PI / 2.0f;
 
     float eta_1 = entering ? Materials::AIR.eta : i.material->eta;
     float eta_2 = entering ? i.material->eta : Materials::AIR.eta;
     Vec3f kt = entering ? i.material->kt : Materials::AIR.kt;
 
-    Ray refract = ray->refract(&i, eta_1, eta_2);
+    // TIR if eta_1 > eta_2 ^ asin(eta_2 / eta_1) < theta_i
+    if (eta_1 < eta_2 ||
+        asin(eta_2 / eta_1) >
+            theta_i) {  // if eta_1 > eta_2 total internal reflection can occur
+      Ray refract = ray->refract(&i, eta_1, eta_2);
 
-    color = color + kt.mult(raytrace(world, &refract, recursionDepth + 1,
-                                     maxRecursionDepth));
+      color = color + kt.mult(raytrace(world, &refract, recursionDepth + 1,
+                                       maxRecursionDepth));
+    }
   }
 
   color = color.clamp(Vec3f(0.0f), Vec3f(1.0f));

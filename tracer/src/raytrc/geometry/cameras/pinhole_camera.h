@@ -25,6 +25,10 @@ class PinholeCamera : public Camera {
                 float fov = M_PI / 2.0f);
 
   Ray generateRay(int x, int y);
+  Ray generateRay(int x, int y, float variance);
+
+ private:
+  Vec2f getUV(int x, int y);
 };
 
 }  // namespace raytrc

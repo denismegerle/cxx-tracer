@@ -11,12 +11,12 @@ namespace raytrc {
 class World {
  public:
   Camera *camera;
-  std::vector<ObjectBase *> objects;
-  std::vector<LightSource *> lightSources;
+  std::vector<std::shared_ptr<ObjectBase>> objects;
+  std::vector<std::shared_ptr<LightSource>> lightSources;
 
   World(){};
-  World(Camera *camera, std::vector<ObjectBase *> objects,
-        std::vector<LightSource *> lightSources)
+  World(Camera *camera, std::vector<std::shared_ptr<ObjectBase>> objects,
+        std::vector<std::shared_ptr<LightSource>> lightSources)
       : camera(camera), objects(objects), lightSources(lightSources){};
   
   bool cast(Ray *ray, Intersection *intersection);

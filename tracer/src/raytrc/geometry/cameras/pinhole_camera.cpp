@@ -1,8 +1,9 @@
 
+#include "raytrc/geometry/cameras/pinhole_camera.h"
+
 #include <cassert>
 
 #include "maths/maths.h"
-#include "raytrc/geometry/cameras/pinhole_camera.h"
 
 using namespace raytrc;
 using namespace gem;
@@ -24,7 +25,7 @@ PinholeCamera::PinholeCamera(Vec3f position, Vec3f target, Vec3f up,
   this->imagePaneWidth = this->aspect * this->imagePaneHeight;
 }
 
-Ray PinholeCamera::generateRay(int x, int y) {
+Vec2f PinholeCamera::getUV(int x, int y) {
   assert(x >= 0 && x < this->pixelWidth);
   assert(y >= 0 && y < this->pixelHeight);
 
@@ -34,16 +35,34 @@ Ray PinholeCamera::generateRay(int x, int y) {
     and with the given x, y / xtotal, ytotal the image to pane ratio
   */
   Vec2f paneTopLeft =
-      (1.0f / 2.0f) * Vec2f(- this->imagePaneWidth, this->imagePaneHeight);
+      (1.0f / 2.0f) * Vec2f(-this->imagePaneWidth, this->imagePaneHeight);
   Vec2f paneSize(this->imagePaneWidth, this->imagePaneHeight);
   Vec2f pixelScale((x + 0.5f) / this->pixelWidth,
-                   - (y + 0.5f) / this->pixelHeight);
+                   -(y + 0.5f) / this->pixelHeight);
 
-  Vec2f uv =
-      paneTopLeft + paneSize.mult(pixelScale);  // here mult is elementwise!
+  return paneTopLeft + paneSize.mult(pixelScale);  // here mult is elementwise!
+}
+
+inline double random_double() { return rand() / (RAND_MAX + 1.0); }
+
+Ray PinholeCamera::generateRay(int x, int y) {
+  Vec2f uv = this->getUV(x, y);
 
   Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
-                    this->distanceToImagePane * this->imagePaneNormal;
+                         this->distanceToImagePane * this->imagePaneNormal;
+
+  return Ray(this->position, imagePanePoint);
+}
+
+Ray PinholeCamera::generateRay(int x, int y, float variance) {
+  Vec2f pixelSizeOnPane(this->imagePaneHeight / this->pixelHeight,
+                        this->imagePaneWidth / this->pixelWidth);
+
+  Vec2f randomVector((float) random_double() - 0.5f, (float) random_double() - 0.5f);
+  Vec2f uv = this->getUV(x, y) + variance * randomVector.mult(pixelSizeOnPane);
+
+  Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
+                         this->distanceToImagePane * this->imagePaneNormal;
 
   return Ray(this->position, imagePanePoint);
 }
