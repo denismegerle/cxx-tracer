@@ -1,11 +1,12 @@
 
 #include "point_light.h"
+
 #include "raytrc/world.h"
 
 using namespace raytrc;
 using namespace gem;
 
-constexpr auto EPS_SHADOW = 10e-6;
+constexpr auto EPS_SHADOW = 10e-6f;
 
 /*
 according to PHONG lighting model,
@@ -19,20 +20,21 @@ Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
 
   // finding intersecting objects of the ray from intersection to the light
   Intersection i;
-  Ray r(intersection->position + intersection->normal.mult(Vec3f(EPS_SHADOW)), this->position - intersection->position);
+  Ray r(intersection->position + EPS_SHADOW * intersection->normal,
+        this->position - intersection->position);
   if (world->cast(&r, &i) &&
-      r.t < 1.0f) {       // obj between this and light blocks the light
+      r.t < 1.0f) {  // obj between this and light blocks the light
     transmissionFactor = i.material->kt;
   }
 
   /* calculate ambient part */
-  Vec3f ambient = intersection->material->ka.mult(this->intensity);
+  Vec3f ambient = intersection->material->ka.mult(this->ambient);
 
   /* calculating diffuse part */
   float diffuseReflectionComponent = intersection->normal * lightDirection;
 
   Vec3f diffuse = (diffuseReflectionComponent > 0)
-                      ? intersection->material->kd.mult(this->intensity) *
+                      ? intersection->material->kd.mult(this->diffuse) *
                             diffuseReflectionComponent
                       : Vec3f(0.0f);
 
@@ -44,13 +46,12 @@ Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
 
   Vec3f specular =
       (diffuseReflectionComponent > 0 && specularReflectionComponent > 0)
-          ? intersection->material->ks.mult(this->intensity) *
+          ? intersection->material->ks.mult(this->specular) *
                 powf(specularReflectionComponent, intersection->material->n)
           : Vec3f(0.0f);
 
   float distanceFactor = 1.0f / (distance * distance);
 
   return ambient +
-         transmissionFactor.mult(
-         distanceFactor * (diffuse + specular));
+         transmissionFactor.mult(distanceFactor * (diffuse + specular));
 }

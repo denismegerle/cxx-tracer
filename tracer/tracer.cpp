@@ -22,8 +22,8 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 1920;
-constexpr auto PIXEL_HEIGHT = 1080;
+constexpr auto PIXEL_WIDTH = 640;
+constexpr auto PIXEL_HEIGHT = 360;
 constexpr auto CHANNEL = 3;
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
@@ -92,10 +92,10 @@ int main() {
                               Vec3f(1.0f, 0.0f, 0.0f)));
   */
 
-  lightSources.push_back(
-      new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f, 2.0f, 2.0f)));
-  // lightSources.push_back(
-  //    new PointLight(Vec3f(-4.0f, 2.0f, 3.0f), Vec3f(0.5f, 0.5f, 0.5f)));
+  lightSources.push_back(new PointLight(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f),
+                                        Vec3f(2.0f), Vec3f(3.0f)));
+  //lightSources.push_back(new PointLight(Vec3f(-4.0f, -2.0f, 1.0f), Vec3f(0.4f),
+  //                                      Vec3f(1.0f), Vec3f(2.0f)));
   // lightSources.push_back(new AmbientLight(Vec3f(0.0f), Vec3f(0.1f)));
 
   World world(&cam, objects, lightSources);
@@ -179,6 +179,7 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
                                      maxRecursionDepth));
   }
 
+  color = color.clamp(Vec3f(0.0f), Vec3f(1.0f));
   return color;
 }
 
