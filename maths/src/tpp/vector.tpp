@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <omp.h>
 
 #include <algorithm>
 #include <array>
@@ -15,7 +16,7 @@ using namespace gem;
 /* operator overloads for vectors */
 template <typename T, size_t S>
 std::ostream &operator<<(std::ostream &strm, const Vector<T, S> &vec) {
-  strm << "Vector[" << vec.length << "]"
+  strm << "Vector[" << vec.values.size() << "]"
        << "(|";
 
   for (auto &elem : vec.values) strm << elem << "|";
@@ -56,22 +57,19 @@ Vector<T, S> operator*(const Vector<T, S> &a, const T &scalar) {
 using namespace gem;
 
 template <typename T, size_t S>
-Vector<T, S>::Vector(const std::array<T, S> values)
-    : length(std::size(values)), values(values) {
+Vector<T, S>::Vector(const std::array<T, S> values) : values(values) {
   assert(S == std::size(values));
 };
 
 template <typename T, size_t S>
 template <typename... Ts>
-Vector<T, S>::Vector(const T value, const Ts... vals) : length(S) {
+Vector<T, S>::Vector(const T value, const Ts... vals) : values() {
   std::initializer_list<T> values_list = {vals...};
   auto init_with_one = [](std::array<T, S> *values, T value) {
-    *values = std::array<T, S>();
     values->fill(value);
   };
   auto init_with_s = [](std::array<T, S> *values, T value,
                         std::initializer_list<T> vals) {
-    *values = std::array<T, S>();
     (*values)[0] = value;
     std::copy(std::begin(vals), std::end(vals), std::begin(*values) + 1);
   };
@@ -90,7 +88,7 @@ template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::add(const Vector<T, S> other) const {
   std::array<T, S> sum{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     sum[i] = this->values[i] + other.values[i];
   }
 
@@ -101,7 +99,7 @@ template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::sub(const Vector<T, S> other) const {
   std::array<T, S> diff{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     diff[i] = this->values[i] - other.values[i];
   }
 
@@ -112,7 +110,7 @@ template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::negate() const {
   std::array<T, S> negation{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     negation[i] = -this->values[i];
   }
 
@@ -123,7 +121,7 @@ template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::mult(const Vector<T, S> other) const {
   std::array<T, S> prod{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     prod[i] = this->values[i] * other.values[i];
   }
 
@@ -134,7 +132,7 @@ template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::mult(const T scalar) const {
   std::array<T, S> prod{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     prod[i] = this->values[i] * scalar;
   }
 
@@ -145,7 +143,7 @@ template <typename T, size_t S>
 T Vector<T, S>::dot(const Vector<T, S> other) const {
   T prod = 0;
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     prod += this->values[i] * other.values[i];
   }
 
@@ -158,21 +156,21 @@ T Vector<T, S>::norm(const Vector<T, S>::NormType type) const {
 
   switch (type) {
     case NormType::EUCLIDEAN:
-      for (int i = 0; i < this->length; i++) {
+      for (int i = 0; i < this->values.size(); i++) {
         norm += this->values[i] * this->values[i];
       }
       norm = sqrt(norm);
       break;
 
     case NormType::TAXICAB:
-      for (int i = 0; i < this->length; i++) {
+      for (int i = 0; i < this->values.size(); i++) {
         norm += abs(this->values[i]);
       }
       break;
 
     case NormType::MAX:
       norm = abs(this->values[0]);
-      for (int i = 0; i < this->length; i++) {
+      for (int i = 0; i < this->values.size(); i++) {
         if (abs(this->values[i]) > norm) {
           norm = abs(this->values[i]);
         }
@@ -205,7 +203,7 @@ Vector<T, S> Vector<T, S>::clamp(const Vector<T, S> left,
                                  const Vector<T, S> right) const {
   std::array<T, S> clamped{};
 
-  for (int i = 0; i < this->length; i++) {
+  for (int i = 0; i < this->values.size(); i++) {
     clamped[i] = this->values[i];
 
     if (this->values[i] < left.values[i]) clamped[i] = left.values[i];

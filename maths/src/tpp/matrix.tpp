@@ -64,6 +64,50 @@ Matrix<T, S>::Matrix(std::array<std::array<T, S>, S> values)
   assert(S == std::size(values));
 }
 
+
+template <typename T, size_t S>
+template <typename... Ts>
+Matrix<T, S>::Matrix(const T value, const Ts... vals) : length(S), values() {
+  std::initializer_list<T> values_list = {vals...};
+  auto init_with_one = [](std::array<std::array<T, S>, S> *values, T value) {
+    for (auto &elem : *values)
+      elem.fill(value);
+  };
+  auto init_with_s = [](std::array<std::array<T, S>, S> *values, T value,
+                        std::initializer_list<T> vals) {
+    (*values)[0][0] = value;
+
+    for (int i = 0; i < S; i++) {
+      if (i == 0) {
+        std::copy(std::begin(vals), std::begin(vals) + S - 1,
+                  std::begin((*values)[i]) + 1);
+      } else {
+        std::copy(std::begin(vals) + i * S - 1, std::begin(vals) + (i + 1) * S - 1,
+                  std::begin((*values)[i]));
+      
+      }
+    }
+  };
+  auto init_with_d = [](std::array<std::array<T, S>, S> *values, T value,
+                        std::initializer_list<T> vals) {
+    (*values)[0][0] = value;
+
+    for (int i = 1; i < S; i++) {
+      (*values)[i][i] = std::begin(vals)[i - 1];
+    }
+  };
+
+  if (values_list.size() == 0)
+    init_with_one(&values, value);
+  else if (values_list.size() == S - 1)
+    init_with_d(&values, value, values_list);
+  else if (values_list.size() == S * S - 1)
+    init_with_s(&values, value, values_list);
+  else {
+    throw;  // for convenience, TODO: proper exceptions
+  }
+};
+
 /* mathematical functions on matrices */
 template <typename T, size_t S>
 Matrix<T, S> Matrix<T, S>::add(const Matrix<T, S> other) const {

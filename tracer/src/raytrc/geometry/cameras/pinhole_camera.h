@@ -27,7 +27,7 @@ class PinholeCamera : public Camera {
   Ray generateRay(int x, int y);
   Ray generateRay(int x, int y, float variance);
 
- private:
+ protected:
   Vec2f getUV(int x, int y);
 };
 

@@ -2,11 +2,11 @@
 project(tracer LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+set(CMAKE_CXX_FLAGS_RELEASE "/O2 /openmp:experimental")
+set(CMAKE_CXX_FLAGS_DEBUG "/openmp:experimental")
 
 find_package(Threads REQUIRED)
 find_package(Git REQUIRED)
-find_package(OpenMP REQUIRED)
 
 include(ExternalProject)
 include(FetchContent)
@@ -38,4 +38,3 @@ file(GLOB_RECURSE PRIVATE_RAYTRC_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.
 add_executable (tracer "tracer.cpp" ${PRIVATE_RAYTRC_SOURCE_FILES} ${PRIVATE_RAYTRC_HEADER_FILES})
 target_include_directories(tracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_link_libraries(tracer PRIVATE maths)
-target_link_libraries(tracer PRIVATE OpenMP::OpenMP_CXX)

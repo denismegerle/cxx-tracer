@@ -56,7 +56,7 @@ const Material Materials::COPPER(Vec3f(0.19125f, 0.0735f, 0.0225f),
 const Material Materials::GOLD(Vec3f(0.24725f, 0.1995f, 0.0745f),
                     Vec3f(0.75164f, 0.60648f, 0.22648f),
                     Vec3f(0.628281f, 0.555802f, 0.366065f), Vec3f(0.7f),
-                    Vec3f(0.0f), 51.2f);
+                    Vec3f(0.0f), 12.8f);
 const Material Materials::SILVER(Vec3f(0.19225f, 0.19225f, 0.19225f),
                       Vec3f(0.50754f, 0.50754f, 0.50754f),
                       Vec3f(0.508273f, 0.508273f, 0.508273f), Vec3f(0.9f),

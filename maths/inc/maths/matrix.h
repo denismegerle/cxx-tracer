@@ -25,6 +25,8 @@ class Matrix {
   std::array<std::array<T, S>, S> values;
 
   Matrix(std::array<std::array<T, S>, S> values);
+  template <typename... Ts>
+  Matrix(const T value, const Ts... values);
   // TODO: implement diag, I, ... initialization, inverse of matrix
 
   /* mathematical functions on matrices */
@@ -44,6 +46,12 @@ class Matrix {
   // Vec<T, S> normal();
   // Vec<T, S> normalize();
 };
+
+typedef Matrix<float, 2> Mat2f;
+typedef Matrix<float, 3> Mat3f;
+typedef Matrix<float, 4> Mat4f;
+typedef Matrix<int, 3> Mat3i;
+typedef Matrix<int, 3> Mat3i;
 
 }  // namespace gem
 

@@ -22,7 +22,6 @@ class Vector {
     MAX,
   };
 
-  size_t length;
   std::array<T, S> values;
 
   Vector(){};

@@ -12,21 +12,27 @@
 
 #include "CImg.h"
 #include "maths/maths.h"
-#include "raytrc/geometry/cameras/pinhole_camera.h"
+#include "raytrc/geometry/cameras/ss_pinhole_camera.h"
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/geometry/objects/plane.h"
 #include "raytrc/geometry/objects/sphere.h"
 #include "raytrc/geometry/ray.h"
 #include "raytrc/light/ambient_light.h"
 #include "raytrc/light/point_light.h"
+#include "raytrc/light/sphere_light.h"
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 1920;
-constexpr auto PIXEL_HEIGHT = 1080;
+constexpr auto PIXEL_WIDTH = 960;
+constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
+constexpr auto DEFAULT_FOV = M_PI / 2.0f;
+
 constexpr auto N_SUPERSAMPLES = 10;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
+
+constexpr auto N_SHADOWRAYS = 10;
+
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
 constexpr auto MAX_RECURSION_DEPTH = 3;
@@ -55,13 +61,14 @@ calculation
 */
 
 int main() {
+
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 0.25f;
-  PinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
-                    camDistanceToImagePane);
+  SupersamplingPinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT, camDistanceToImagePane,
+                                 DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
 
   /* ********** WORLD CREATION ********** */
   std::vector<shared_ptr<ObjectBase>> objects;
@@ -88,34 +95,37 @@ int main() {
                                        &Materials::WHITE_RUBBER,
                                        Vec3f(0.0f, 0.0f, -1.0f)));
 
-  lightSources.push_back(make_shared<PointLight>(
-      Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f), Vec3f(2.0f), Vec3f(3.0f)));
+  lightSources.push_back(make_shared<SphereLight>(
+      Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.5f), Vec3f(3.5f)));
 
   World world(&cam, objects, lightSources);
 
   /* ********** RT CODE ********** */
   uint8_t *frameBuffer = new uint8_t[CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT];
-
+  
 #pragma omp parallel for
   for (int y = 0; y < PIXEL_HEIGHT; y++) {
     for (int x = 0; x < PIXEL_WIDTH; x++) {
       Vec3f color(0.0f);
       for (int i = 0; i < N_SUPERSAMPLES; i++) {
-        /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
-        Ray primaryRay = cam.generateRay(x, y, SUPERSAMPLING_VARIANCE);
+        for (int j = 0; j < N_SHADOWRAYS; j++) {
+          /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
+          Ray primaryRay = cam.generateRay(x, y);
 
-        // raytrace recursively
-        color =
-            color + (1.0f / N_SUPERSAMPLES) *
-                        raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
+          // raytrace recursively
+          color =
+              color + (1.0f / (N_SUPERSAMPLES * N_SHADOWRAYS)) *
+                          raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
 
-        for (int c = 0; c < CHANNEL; c++) {
-          if (color.norm() != 0.0f) {
-            frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
-                (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
-          } else {
-            frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH + x] =
-                0;
+          for (int c = 0; c < CHANNEL; c++) {
+            if (color.norm() != 0.0f) {
+              frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
+                          x] =
+                  (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
+            } else {
+              frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
+                          x] = 0;
+            }
           }
         }
       }
@@ -141,7 +151,7 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
 
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
   Intersection i;
-  if (!world->cast(ray, &i)) return color;
+  if (!world->cast(ray, &i)) return color;  // TODO add env map here...
 
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources

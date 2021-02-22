@@ -1,8 +1,7 @@
 
-#include "raytrc/geometry/cameras/pinhole_camera.h"
-
 #include <cassert>
 
+#include "raytrc/geometry/cameras/pinhole_camera.h"
 #include "maths/maths.h"
 
 using namespace raytrc;
@@ -43,23 +42,8 @@ Vec2f PinholeCamera::getUV(int x, int y) {
   return paneTopLeft + paneSize.mult(pixelScale);  // here mult is elementwise!
 }
 
-inline double random_double() { return rand() / (RAND_MAX + 1.0); }
-
 Ray PinholeCamera::generateRay(int x, int y) {
   Vec2f uv = this->getUV(x, y);
-
-  Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
-                         this->distanceToImagePane * this->imagePaneNormal;
-
-  return Ray(this->position, imagePanePoint);
-}
-
-Ray PinholeCamera::generateRay(int x, int y, float variance) {
-  Vec2f pixelSizeOnPane(this->imagePaneHeight / this->pixelHeight,
-                        this->imagePaneWidth / this->pixelWidth);
-
-  Vec2f randomVector((float) random_double() - 0.5f, (float) random_double() - 0.5f);
-  Vec2f uv = this->getUV(x, y) + variance * randomVector.mult(pixelSizeOnPane);
 
   Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
                          this->distanceToImagePane * this->imagePaneNormal;
