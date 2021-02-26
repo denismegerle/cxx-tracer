@@ -17,7 +17,7 @@ class Plane : public ObjectBase {
   Plane(Vec3f position, const Material *material, Vec3f normal)
       : ObjectBase(position, material), normal(normal.normalize()){};
 
-  bool intersect(Ray *ray, Intersection *intersection);
+  bool intersect(Ray *ray, Intersection *intersection) override;
 };
 
 }  // namespace raytrc

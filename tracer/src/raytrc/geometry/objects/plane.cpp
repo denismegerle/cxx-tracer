@@ -14,11 +14,10 @@ bool Plane::intersect(Ray *ray, Intersection *intersection) {
               relativeOrientation;  // = (d - E * N) / (D * N)
 
     ray->t = t / ray->direction.norm();
-    //ray->t = t;
-    ray->intersectedObject = this;
 
+    intersection->intersectedObject = this;
     intersection->position = ray->equate();
-    intersection->normal = ((ray->origin - this->position) * this->normal > 0) ? this->normal : -1.0f * this->normal;
+    intersection->normal = ((ray->origin - this->position) * this->normal > 0) ? this->normal.normalize() : -1.0f * this->normal.normalize();
     intersection->negRayVector =
         (ray->origin - intersection->position).normalize();
     intersection->material = this->material;

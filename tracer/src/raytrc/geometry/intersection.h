@@ -9,8 +9,10 @@ namespace raytrc {
 
 class Intersection {
  public:
-  Vec3f position, normal, negRayVector;  // pos, normale, vector to origin of ray
+  Vec3f position, normal,
+      negRayVector;  // pos, normale, vector to origin of ray
   const Material *material;
+  void* intersectedObject;
 
   Intersection(){};
   Intersection(Vec3f position, Vec3f normal, Vec3f negRayVector,

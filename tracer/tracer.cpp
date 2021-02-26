@@ -12,6 +12,7 @@
 
 #include "CImg.h"
 #include "maths/maths.h"
+#include "raytrc/geometry/cameras/ss_lense_camera.h"
 #include "raytrc/geometry/cameras/ss_pinhole_camera.h"
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/geometry/objects/plane.h"
@@ -22,6 +23,11 @@
 #include "raytrc/light/sphere_light.h"
 #include "raytrc/world.h"
 #include "stb_image_write.h"
+#include "raytrc/texture/mapping/texture_mapping.h"
+#include "raytrc/texture/image_texture.h"
+#include "raytrc/texture/texture_enums.h"
+
+#include "config.h"
 
 constexpr auto PIXEL_WIDTH = 960;
 constexpr auto PIXEL_HEIGHT = 540;
@@ -31,7 +37,9 @@ constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 constexpr auto N_SUPERSAMPLES = 10;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
-constexpr auto N_SHADOWRAYS = 10;
+constexpr auto N_SHADOWRAYS = 5;
+
+constexpr auto N_DEFOCUSRAYS = 1;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
@@ -47,28 +55,42 @@ float gamma_correct(float color, float gamma);
 
 /*
 TODO:
-- create simple maths library and allow for use here
-- create objects (Ray, Intersection, ...) from the lecture
-- parser for input of scenes + output of png files!
-- parser to input material types + their parameters!
-- open png after prg finish
-- simple whitted style raytracing!
-X shaders to use gpu? (nah)
-- restrict cast to certain max length with parameter!
-
-- make light source emit ambient, specular, diffuse light and use in phong
-calculation
+- centrally execute shadow rays, and only for light sources that need it, not for all of em
+- properly model cameras...
+- add triangle, cube to object primitives
+- maybe model brdf as class to make interchangeable...
+- anisotropic brdfs
+- Flat/Phong shading für dinge...
+- transmissions depth dependent
+- supersampling noise sampler parametrisierbar machen [uniform, adaptiv, stochastisch, blue noise]
+- evtl. Distributed RT
+- Textures --> Bump-Mapping, Environment Mapping, Shadow-Mapping, Gloss Mapping, Diffuse Textures, Ambient Occlusion Mapping, 
+- Texture Filtering | Mip Mapping
+- Env Map Filtering
+- Anisotrope Filterung
+- Transparency [semi, alphatest]
+- Procedural textures
+- BVHs, ...
 */
 
 int main() {
+
+  std::cout << RESOURCES_PATH << std::endl;
+
+  std::string tex_file(RESOURCES_PATH  + std::string("textures/diffuse/mars.jpg"));
+  ImageTexture tex(tex_file, ImageTextureWrapMode::CLAMP,
+                   ImageTextureFilterMode::NEAREST);
+
+  std::cout << tex.image(0, 0, 0, 0) << std::endl;
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 0.25f;
-  SupersamplingPinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT, camDistanceToImagePane,
-                                 DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
+  SupersamplingPinholeCamera cam(
+      camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
+      camDistanceToImagePane, DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
 
   /* ********** WORLD CREATION ********** */
   std::vector<shared_ptr<ObjectBase>> objects;
@@ -96,35 +118,41 @@ int main() {
                                        Vec3f(0.0f, 0.0f, -1.0f)));
 
   lightSources.push_back(make_shared<SphereLight>(
-      Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.5f), Vec3f(3.5f)));
+      Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
+  //lightSources.push_back(make_shared<PointLight>(
+  //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
+  lightSources.push_back(make_shared<AmbientLight>(
+      Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
 
   World world(&cam, objects, lightSources);
 
   /* ********** RT CODE ********** */
   uint8_t *frameBuffer = new uint8_t[CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT];
-  
+
 #pragma omp parallel for
   for (int y = 0; y < PIXEL_HEIGHT; y++) {
     for (int x = 0; x < PIXEL_WIDTH; x++) {
       Vec3f color(0.0f);
       for (int i = 0; i < N_SUPERSAMPLES; i++) {
         for (int j = 0; j < N_SHADOWRAYS; j++) {
-          /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
-          Ray primaryRay = cam.generateRay(x, y);
+          for (int k = 0; k < N_DEFOCUSRAYS; k++) {
+            /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
+            Ray primaryRay = cam.generateRay(x, y);
 
-          // raytrace recursively
-          color =
-              color + (1.0f / (N_SUPERSAMPLES * N_SHADOWRAYS)) *
-                          raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
+            // raytrace recursively
+            color = color +
+                    (1.0f / (N_SUPERSAMPLES * N_SHADOWRAYS * N_DEFOCUSRAYS)) *
+                        raytrace(&world, &primaryRay, 0, MAX_RECURSION_DEPTH);
 
-          for (int c = 0; c < CHANNEL; c++) {
-            if (color.norm() != 0.0f) {
-              frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
-                          x] =
-                  (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
-            } else {
-              frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
-                          x] = 0;
+            for (int c = 0; c < CHANNEL; c++) {
+              if (color.norm() != 0.0f) {
+                frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
+                            x] =
+                    (uint8_t)(gamma_correct(color[c], 1.0f) * 255.0f);
+              } else {
+                frameBuffer[c * PIXEL_WIDTH * PIXEL_HEIGHT + y * PIXEL_WIDTH +
+                            x] = 0;
+              }
             }
           }
         }
@@ -152,6 +180,8 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
   Intersection i;
   if (!world->cast(ray, &i)) return color;  // TODO add env map here...
+
+  // TODO could simply get the intersection material here and get samples from all textures...
 
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources

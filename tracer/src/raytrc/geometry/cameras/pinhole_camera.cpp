@@ -39,7 +39,7 @@ Vec2f PinholeCamera::getUV(int x, int y) {
   Vec2f pixelScale((x + 0.5f) / this->pixelWidth,
                    -(y + 0.5f) / this->pixelHeight);
 
-  return paneTopLeft + paneSize.mult(pixelScale);  // here mult is elementwise!
+  return paneTopLeft + paneSize.mult(pixelScale);
 }
 
 Ray PinholeCamera::generateRay(int x, int y) {

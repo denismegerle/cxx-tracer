@@ -15,7 +15,8 @@ class World {
   std::vector<std::shared_ptr<LightSource>> lightSources;
 
   World(){};
-  World(Camera *camera, std::vector<std::shared_ptr<ObjectBase>> objects,
+  World(Camera *camera,
+        std::vector<std::shared_ptr<ObjectBase>> objects,
         std::vector<std::shared_ptr<LightSource>> lightSources)
       : camera(camera), objects(objects), lightSources(lightSources){};
   

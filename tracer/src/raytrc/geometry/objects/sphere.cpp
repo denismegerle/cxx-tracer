@@ -26,8 +26,8 @@ bool Sphere::intersect(Ray *ray, Intersection *intersection) {
   }
 
   ray->t = t;
-  ray->intersectedObject = this;
 
+  intersection->intersectedObject = this;
   intersection->position = ray->equate();
   intersection->normal = (intersection->position - this->position).normalize();
   intersection->negRayVector =

@@ -23,7 +23,6 @@ struct Material {
 /* predefined materials ... */
 class Materials {
  public:
-  static const int IX = 5;
   static const Material METAL_RED;
   static const Material SHINY_GREEN;
   static const Material DIFFUSE_BLUE;

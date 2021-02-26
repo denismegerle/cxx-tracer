@@ -2,6 +2,7 @@
 #include "point_light.h"
 
 #include "raytrc/world.h"
+#include "raytrc/light/lighting_model.h"
 
 using namespace raytrc;
 using namespace gem;
@@ -13,45 +14,22 @@ according to PHONG lighting model,
 */
 Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
   /* calculating whether we need to cast shadow */
-  Vec3f lightDirection = (this->position - intersection->position).normalize();
-  float distance = (this->position - intersection->position).norm();
+  Vec3f lightDirection = this->position - intersection->position;
 
   Vec3f transmissionFactor(1.0f);
 
   // finding intersecting objects of the ray from intersection to the light
   Intersection i;
   Ray r(intersection->position + EPS_SHADOW * intersection->normal,
-        this->position - intersection->position);
+        lightDirection);
   if (world->cast(&r, &i) &&
       r.t < 1.0f) {  // obj between this and light blocks the light
-    transmissionFactor = Vec3f(0.0f); // could be kt or specific transmission factor of material (or kt * depth, exp func of thickness)
+    transmissionFactor =
+        Vec3f(0.0f);  // could be kt or specific transmission factor of material
+                      // (or kt * depth, exp func of thickness)
   }
 
-  /* calculate ambient part */
-  Vec3f ambient = intersection->material->ka.mult(this->ambient);
-
-  /* calculating diffuse part */
-  float diffuseReflectionComponent = intersection->normal * lightDirection;
-
-  Vec3f diffuse = (diffuseReflectionComponent > 0)
-                      ? intersection->material->kd.mult(this->diffuse) *
-                            diffuseReflectionComponent
-                      : Vec3f(0.0f);
-
-  /* calculate specular part */
-  Vec3f reflectionDirection =
-      2.0f * intersection->normal * diffuseReflectionComponent - lightDirection;
-  float specularReflectionComponent =
-      reflectionDirection * intersection->negRayVector;
-
-  Vec3f specular =
-      (diffuseReflectionComponent > 0 && specularReflectionComponent > 0)
-          ? intersection->material->ks.mult(this->specular) *
-                powf(specularReflectionComponent, intersection->material->n)
-          : Vec3f(0.0f);
-
-  float distanceFactor = 1.0f / (distance * distance);
-
-  return ambient +
-         transmissionFactor.mult(distanceFactor * (diffuse + specular));
+  Vec3f phongLighting =
+      evaluate_phong(lightDirection, this->diffuse, this->specular, intersection);
+  return transmissionFactor.mult(phongLighting);
 }

@@ -33,8 +33,18 @@ include_directories(${cimglib_SOURCE_DIR})
 ### BUILD OPTIONS FOR TRACER
 file(GLOB_RECURSE PRIVATE_RAYTRC_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 file(GLOB_RECURSE PRIVATE_RAYTRC_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+set(RESOURCES_PATH "${CMAKE_CURRENT_BINARY_DIR}/res/")
+
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
 
 # Add source to this project's executable.
 add_executable (tracer "tracer.cpp" ${PRIVATE_RAYTRC_SOURCE_FILES} ${PRIVATE_RAYTRC_HEADER_FILES})
 target_include_directories(tracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(tracer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(tracer PRIVATE maths)
+
+file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/res/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/res/)

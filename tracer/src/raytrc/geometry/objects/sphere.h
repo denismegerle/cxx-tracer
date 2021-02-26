@@ -16,7 +16,7 @@ class Sphere : public ObjectBase {
   Sphere(){};
   Sphere(Vec3f position, const Material *material, float radius) : ObjectBase(position, material), radius(radius){};
 
-  bool intersect(Ray *ray, Intersection *intersection);
+  bool intersect(Ray *ray, Intersection *intersection) override;
 };
 
 }  // namespace raytrc

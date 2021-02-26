@@ -9,5 +9,5 @@ using namespace gem;
 
 */
 Vec3f AmbientLight::computeDirectLight(World *world, Intersection *intersection) {
-  return intensity;
+  return intersection->material->ka.mult(this->intensity);
 }
