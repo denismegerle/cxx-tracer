@@ -1,9 +1,12 @@
 #pragma once
 
 #include "CImg.h"
+
 #include "maths/maths.h"
+
 #include "raytrc/texture/texture.h"
 #include "raytrc/texture/texture_enums.h"
+#include "raytrc/geometry/intersection.h"
 
 using namespace gem;
 using namespace cimg_library;
@@ -24,7 +27,7 @@ class ImageTexture : Texture {
   ImageTexture(string file, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode);
 
-  Vec3f evaluate(Vec2f uv, Vec2f dudv = Vec2f(0.0f)) const override;
+  void applyOn(Intersection *intersection, Vec2f uv, Vec2f dudv = Vec2f(0.0f)) const override;
 };
 
 }  // namespace raytrc

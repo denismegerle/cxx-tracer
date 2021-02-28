@@ -11,12 +11,12 @@ class Intersection {
  public:
   Vec3f position, normal,
       negRayVector;  // pos, normale, vector to origin of ray
-  const Material *material;
+  Material material;
   void* intersectedObject;
 
   Intersection(){};
   Intersection(Vec3f position, Vec3f normal, Vec3f negRayVector,
-               const Material *material)
+               Material material)
       : position(position),
         normal(normal),
         negRayVector(negRayVector),

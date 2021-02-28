@@ -41,5 +41,5 @@ Vec3f World::deriveTransmissionFactor(Ray *ray) {
   Ray rayCopy = Ray(*ray);
   if (!this->cast(ray, &i) || rayCopy.t >= 1.0f) return Vec3f(0.0f);
 
-  return i.material->kt;
+  return i.material.kt;
 }

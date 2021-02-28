@@ -15,7 +15,7 @@ Vec3f raytrc::evaluate_phong(Vec3f lightDirection, Vec3f diffuseLight,
       intersection->normal * lightDirectionNormalized;
 
   Vec3f diffuse = (diffuseReflectionComponent > 0)
-                      ? intersection->material->kd.mult(diffuseLight) *
+                      ? intersection->material.kd.mult(diffuseLight) *
                             diffuseReflectionComponent
                       : Vec3f(0.0f);
 
@@ -28,8 +28,8 @@ Vec3f raytrc::evaluate_phong(Vec3f lightDirection, Vec3f diffuseLight,
 
   Vec3f specular =
       (diffuseReflectionComponent > 0 && specularReflectionComponent > 0)
-          ? intersection->material->ks.mult(specularLight) *
-                powf(specularReflectionComponent, intersection->material->n)
+          ? intersection->material.ks.mult(specularLight) *
+                powf(specularReflectionComponent, intersection->material.n)
           : Vec3f(0.0f);
 
   float distanceFactor = 1.0f / (distance * distance);

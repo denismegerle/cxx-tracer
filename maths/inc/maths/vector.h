@@ -22,7 +22,7 @@ class Vector {
     MAX,
   };
 
-  std::array<T, S> values;
+  std::array<T, S> values{};
 
   Vector(){};
   Vector(const std::array<T, S> value);

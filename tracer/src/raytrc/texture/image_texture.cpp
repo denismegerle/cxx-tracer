@@ -2,7 +2,7 @@
 
 #include "CImg.h"
 #include "maths/maths.h"
-
+#include "raytrc/geometry/intersection.h"
 
 using namespace raytrc;
 using namespace gem;
@@ -14,6 +14,5 @@ ImageTexture::ImageTexture(string file, ImageTextureWrapMode wrapMode,
   image = CImg<float>(file.c_str());
 };
 
-Vec3f ImageTexture::evaluate(Vec2f uv, Vec2f dudv) const {
-  return Vec3f(0.0f);
-};
+void ImageTexture::applyOn(Intersection *intersection, Vec2f uv,
+                           Vec2f dudv) const {};

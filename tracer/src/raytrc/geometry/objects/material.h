@@ -12,6 +12,7 @@ struct Material {
   float n;            // elem [0,inf] -> phong exponent
   float eta;          // refractive index [technically dependent on lambda, but we assume const for now]
   
+  Material(){};
   Material(Vec3f ka, Vec3f kd, Vec3f ks, float n)
       : ka(ka), kd(kd), ks(ks), kr(Vec3f(0.0f)), kt(Vec3f(0.0f)), n(n), eta(0.0f){};
   Material(Vec3f ka, Vec3f kd, Vec3f ks, Vec3f kr, Vec3f kt, float n)

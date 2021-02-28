@@ -26,6 +26,7 @@
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/image_texture.h"
 #include "raytrc/texture/texture_enums.h"
+#include "raytrc/texture/const_texture.h"
 
 #include "config.h"
 
@@ -34,7 +35,7 @@ constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 10;
+constexpr auto N_SUPERSAMPLES = 5;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
 constexpr auto N_SHADOWRAYS = 5;
@@ -74,7 +75,7 @@ TODO:
 */
 
 int main() {
-
+  /*
   std::cout << RESOURCES_PATH << std::endl;
 
   std::string tex_file(RESOURCES_PATH  + std::string("textures/diffuse/mars.jpg"));
@@ -82,6 +83,7 @@ int main() {
                    ImageTextureFilterMode::NEAREST);
 
   std::cout << tex.image(0, 0, 0, 0) << std::endl;
+  */
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
@@ -97,24 +99,24 @@ int main() {
   std::vector<shared_ptr<LightSource>> lightSources;
 
   objects.push_back(make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f),
-                                        &Materials::GLASS_SIMPLE,
+                                        Materials::GLASS_SIMPLE,
                                         0.5f * tan(M_PI / 4.0f)));
   objects.push_back(make_shared<Sphere>(
-      Vec3f(-2.0f, -2.0f, 2.0f), &Materials::BRONZE, 0.5f * tan(M_PI / 4.0f)));
+      Vec3f(-2.0f, -2.0f, 2.0f), Materials::BRONZE, 0.5f * tan(M_PI / 4.0f)));
   objects.push_back(make_shared<Sphere>(
-      Vec3f(-2.0f, 2.0f, 2.0f), &Materials::GOLD, 0.5f * tan(M_PI / 4.0f)));
+      Vec3f(-2.0f, 2.0f, 2.0f), Materials::GOLD, 0.5f * tan(M_PI / 4.0f)));
 
   objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
-                                       &Materials::WHITE_RUBBER,
+                                       Materials::WHITE_RUBBER,
                                        Vec3f(0.0f, 0.0f, 1.0f)));
   objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
-                                       &Materials::REFLECTIVE_SIMPLE,
+                                       Materials::REFLECTIVE_SIMPLE,
                                        Vec3f(-1.0f, 0.0f, 0.0f)));
   objects.push_back(make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f),
-                                       &Materials::WHITE_RUBBER,
+                                       Materials::WHITE_RUBBER,
                                        Vec3f(1.0f, 0.0f, 0.0f)));
   objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f),
-                                       &Materials::WHITE_RUBBER,
+                                       Materials::WHITE_RUBBER,
                                        Vec3f(0.0f, 0.0f, -1.0f)));
 
   lightSources.push_back(make_shared<SphereLight>(
@@ -181,7 +183,7 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
   Intersection i;
   if (!world->cast(ray, &i)) return color;  // TODO add env map here...
 
-  // TODO could simply get the intersection material here and get samples from all textures...
+  // TODO here we know an intersection happend, now apply all textures to the material in the intersection
 
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources
@@ -190,24 +192,24 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
   }
 
   // reflection rays, only if material is actually reflective
-  if (i.material->kr.norm() > 0.0f &&
+  if (i.material.kr.norm() > 0.0f &&
       REFLECTION_ON) {  // TODO change to isReflective method
     Ray reflect = ray->reflect(&i);
     color =
-        color + i.material->kr.mult(raytrace(
+        color + i.material.kr.mult(raytrace(
                     world, &reflect, recursionDepth + 1, maxRecursionDepth));
   }
 
-  if (i.material->kt.norm() > 0.0f && TRANSMISSION_ON) {
+  if (i.material.kt.norm() > 0.0f && TRANSMISSION_ON) {
     // for simplification, the assumption is: we either enter or leave a
     // material (from/to air)
     float theta_i_ = acos(ray->direction.normalize().dot(i.normal));
     float theta_i = (theta_i_ > M_PI / 2.0f) ? M_PI - theta_i_ : theta_i_;
     bool entering = theta_i_ > M_PI / 2.0f;
 
-    float eta_1 = entering ? Materials::AIR.eta : i.material->eta;
-    float eta_2 = entering ? i.material->eta : Materials::AIR.eta;
-    Vec3f kt = entering ? i.material->kt : Materials::AIR.kt;
+    float eta_1 = entering ? Materials::AIR.eta : i.material.eta;
+    float eta_2 = entering ? i.material.eta : Materials::AIR.eta;
+    Vec3f kt = entering ? i.material.kt : Materials::AIR.kt;
 
     // TIR if eta_1 > eta_2 ^ asin(eta_2 / eta_1) < theta_i
     if (eta_1 < eta_2 ||
