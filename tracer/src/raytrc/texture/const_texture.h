@@ -9,7 +9,7 @@ using namespace std;
 
 namespace raytrc {
 
-class ConstTexture : Texture {
+class ConstTexture : public Texture {
  public:
   Vec3f ka, kd, ks;  // elem [0,1] -> ambient, diffuse, specular
   Vec3f kr, kt;      // elem [0,1] -> reflection, transmission constant

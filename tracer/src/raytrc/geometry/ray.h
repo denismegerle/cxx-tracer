@@ -1,8 +1,9 @@
 #pragma once
 
-#include "intersection.h"
+
 #include "maths/maths.h"
-#include "objects/material.h"
+#include "raytrc/geometry/objects/material.h"
+#include "raytrc/geometry/intersection.h"
 
 using namespace gem;
 

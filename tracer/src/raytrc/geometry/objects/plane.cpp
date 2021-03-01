@@ -20,7 +20,7 @@ bool Plane::intersect(Ray *ray, Intersection *intersection) {
     intersection->normal = ((ray->origin - this->position) * this->normal > 0) ? this->normal.normalize() : -1.0f * this->normal.normalize();
     intersection->negRayVector =
         (ray->origin - intersection->position).normalize();
-    intersection->material = this->material;
+    //intersection->material = this->material;
 
     return true;
   }

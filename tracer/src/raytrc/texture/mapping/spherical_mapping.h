@@ -6,7 +6,8 @@
 
 namespace raytrc {
 
-class SphericalMapping : TextureMapping {
+class SphericalMapping : public TextureMapping {
+ public:
   Vec2f scale;
   Vec3f center;
 

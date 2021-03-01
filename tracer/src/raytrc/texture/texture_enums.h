@@ -2,7 +2,7 @@
 
 namespace raytrc {
 
-enum ImageTextureFilterMode { NEAREST, BILINEAR, TRILINEAR };
+enum ImageTextureFilterMode { NEAREST, BILINEAR };
 enum ImageTextureWrapMode { REPEAT, CLAMP, ZERO };
 
 }  // namespace raytrc

@@ -32,7 +32,7 @@ bool Sphere::intersect(Ray *ray, Intersection *intersection) {
   intersection->normal = (intersection->position - this->position).normalize();
   intersection->negRayVector =
       (ray->origin - intersection->position).normalize();
-  intersection->material = this->material;
+  //intersection->material = this->material;
 
   return true;
 }

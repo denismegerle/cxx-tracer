@@ -14,7 +14,7 @@ class Sphere : public ObjectBase {
   float radius;
 
   Sphere(){};
-  Sphere(Vec3f position, Material material, float radius) : ObjectBase(position, material), radius(radius){};
+  Sphere(Vec3f position, float radius) : ObjectBase(position), radius(radius){};
 
   bool intersect(Ray *ray, Intersection *intersection) override;
 };

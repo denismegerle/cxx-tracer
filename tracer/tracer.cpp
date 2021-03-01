@@ -5,12 +5,15 @@
 #include <omp.h>
 
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 #include "CImg.h"
+#include "config.h"
 #include "maths/maths.h"
 #include "raytrc/geometry/cameras/ss_lense_camera.h"
 #include "raytrc/geometry/cameras/ss_pinhole_camera.h"
@@ -21,14 +24,16 @@
 #include "raytrc/light/ambient_light.h"
 #include "raytrc/light/point_light.h"
 #include "raytrc/light/sphere_light.h"
+#include "raytrc/texture/const_texture.h"
+#include "raytrc/texture/diffuse_texture.h"
+#include "raytrc/texture/image_texture.h"
+#include "raytrc/texture/mapping/spherical_mapping.h"
+#include "raytrc/texture/mapping/texture_mapping.h"
+#include "raytrc/texture/mapping/zero_mapping.h"
+#include "raytrc/texture/texture.h"
+#include "raytrc/texture/texture_enums.h"
 #include "raytrc/world.h"
 #include "stb_image_write.h"
-#include "raytrc/texture/mapping/texture_mapping.h"
-#include "raytrc/texture/image_texture.h"
-#include "raytrc/texture/texture_enums.h"
-#include "raytrc/texture/const_texture.h"
-
-#include "config.h"
 
 constexpr auto PIXEL_WIDTH = 960;
 constexpr auto PIXEL_HEIGHT = 540;
@@ -56,75 +61,110 @@ float gamma_correct(float color, float gamma);
 
 /*
 TODO:
-- centrally execute shadow rays, and only for light sources that need it, not for all of em
+- centrally execute shadow rays, and only for light sources that need it, not
+for all of em
 - properly model cameras...
 - add triangle, cube to object primitives
 - maybe model brdf as class to make interchangeable...
 - anisotropic brdfs
 - Flat/Phong shading für dinge...
 - transmissions depth dependent
-- supersampling noise sampler parametrisierbar machen [uniform, adaptiv, stochastisch, blue noise]
+- supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
+stochastisch, blue noise]
 - evtl. Distributed RT
-- Textures --> Bump-Mapping, Environment Mapping, Shadow-Mapping, Gloss Mapping, Diffuse Textures, Ambient Occlusion Mapping, 
+- Textures --> Bump-Mapping, Environment Mapping, Shadow-Mapping, Gloss Mapping,
+Diffuse Textures, Ambient Occlusion Mapping,
 - Texture Filtering | Mip Mapping
 - Env Map Filtering
 - Anisotrope Filterung
 - Transparency [semi, alphatest]
 - Procedural textures
 - BVHs, ...
+- rm all using std statements, use namespace specifier, only not use it for
+raytrc and gem
 */
 
 int main() {
-  /*
   std::cout << RESOURCES_PATH << std::endl;
 
-  std::string tex_file(RESOURCES_PATH  + std::string("textures/diffuse/mars.jpg"));
-  ImageTexture tex(tex_file, ImageTextureWrapMode::CLAMP,
-                   ImageTextureFilterMode::NEAREST);
+  std::string tex_file(RESOURCES_PATH +
+                       std::string("textures/diffuse/mars.jpg"));
+  DiffuseTexture tex(tex_file, ImageTextureWrapMode::REPEAT,
+                     ImageTextureFilterMode::NEAREST, Vec3f(8.0f));
 
-  std::cout << tex.image(0, 0, 0, 0) << std::endl;
-  */
+  auto s_m = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
+                                                Vec2f(2.0f));
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 0.25f;
-  SupersamplingPinholeCamera cam(
-      camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
-      camDistanceToImagePane, DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
+  SupersamplingPinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH,
+                                 PIXEL_HEIGHT, camDistanceToImagePane,
+                                 DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
 
   /* ********** WORLD CREATION ********** */
   std::vector<shared_ptr<ObjectBase>> objects;
   std::vector<shared_ptr<LightSource>> lightSources;
 
-  objects.push_back(make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f),
-                                        Materials::GLASS_SIMPLE,
-                                        0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(make_shared<Sphere>(
-      Vec3f(-2.0f, -2.0f, 2.0f), Materials::BRONZE, 0.5f * tan(M_PI / 4.0f)));
-  objects.push_back(make_shared<Sphere>(
-      Vec3f(-2.0f, 2.0f, 2.0f), Materials::GOLD, 0.5f * tan(M_PI / 4.0f)));
+  auto s1 =
+      make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
+                              &ConstTextures::GLASS_SIMPLE);
+  s1->textures.push_back(s1_t);
 
-  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
-                                       Materials::WHITE_RUBBER,
-                                       Vec3f(0.0f, 0.0f, 1.0f)));
-  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
-                                       Materials::REFLECTIVE_SIMPLE,
-                                       Vec3f(-1.0f, 0.0f, 0.0f)));
-  objects.push_back(make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f),
-                                       Materials::WHITE_RUBBER,
-                                       Vec3f(1.0f, 0.0f, 0.0f)));
-  objects.push_back(make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f),
-                                       Materials::WHITE_RUBBER,
-                                       Vec3f(0.0f, 0.0f, -1.0f)));
+  auto s2 =
+      make_shared<Sphere>(Vec3f(-2.0f, -2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s2_t =
+      std::make_tuple(s_m, &tex);
+  s2->textures.push_back(s2_t);
+
+  auto s3 =
+      make_shared<Sphere>(Vec3f(-2.0f, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s3_t =
+      std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::GOLD);
+  s3->textures.push_back(s3_t);
+
+  objects.push_back(s1);
+  objects.push_back(s2);
+  objects.push_back(s3);
+
+  auto p1 =
+      make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
+  auto p1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
+                              &ConstTextures::WHITE_RUBBER);
+  p1->textures.push_back(p1_t);
+
+  auto p2 =
+      make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(-1.0f, 0.0f, 0.0f));
+  auto p2_t = std::make_tuple(std::make_shared<ZeroMapping>(),
+                              &ConstTextures::REFLECTIVE_SIMPLE);
+  p2->textures.push_back(p2_t);
+
+  auto p3 =
+      make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f), Vec3f(1.0f, 0.0f, 0.0f));
+  auto p3_t = std::make_tuple(std::make_shared<ZeroMapping>(),
+                              &ConstTextures::WHITE_RUBBER);
+  p3->textures.push_back(p3_t);
+
+  auto p4 =
+      make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f), Vec3f(0.0f, 0.0f, -1.0f));
+  auto p4_t = std::make_tuple(std::make_shared<ZeroMapping>(),
+                              &ConstTextures::WHITE_RUBBER);
+  p4->textures.push_back(p4_t);
+
+  objects.push_back(p1);
+  objects.push_back(p2);
+  objects.push_back(p3);
+  objects.push_back(p4);
 
   lightSources.push_back(make_shared<SphereLight>(
       Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
-  //lightSources.push_back(make_shared<PointLight>(
+  // lightSources.push_back(make_shared<PointLight>(
   //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
-  lightSources.push_back(make_shared<AmbientLight>(
-      Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
+  lightSources.push_back(
+      make_shared<AmbientLight>(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
 
   World world(&cam, objects, lightSources);
 
@@ -183,7 +223,15 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
   Intersection i;
   if (!world->cast(ray, &i)) return color;  // TODO add env map here...
 
-  // TODO here we know an intersection happend, now apply all textures to the material in the intersection
+  // compute the material parameters of the intersection point
+  for (auto mapping_and_texture :
+       ((ObjectBase *)i.intersectedObject)->textures) {
+    auto mapping = std::get<0>(mapping_and_texture);
+    auto texture = (Texture *)std::get<1>(mapping_and_texture);
+
+    Vec2f uv = mapping->get_uv(&i);
+    texture->applyOn(&i, uv);
+  }
 
   /* 3. CALCULATE LIGHT AND SHADING */
   // direct light from the light sources
@@ -196,8 +244,8 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
       REFLECTION_ON) {  // TODO change to isReflective method
     Ray reflect = ray->reflect(&i);
     color =
-        color + i.material.kr.mult(raytrace(
-                    world, &reflect, recursionDepth + 1, maxRecursionDepth));
+        color + i.material.kr.mult(raytrace(world, &reflect, recursionDepth + 1,
+                                            maxRecursionDepth));
   }
 
   if (i.material.kt.norm() > 0.0f && TRANSMISSION_ON) {

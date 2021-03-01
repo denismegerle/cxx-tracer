@@ -6,6 +6,7 @@
 namespace raytrc {
 
 class TextureMapping {
+ public:
   virtual Vec2f get_uv(Intersection *intersection) const = 0;
 };
 

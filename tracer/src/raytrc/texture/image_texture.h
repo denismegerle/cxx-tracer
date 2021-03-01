@@ -14,20 +14,24 @@ using namespace std;
 
 namespace raytrc {
 
-class ImageTexture : Texture {
+class ImageTexture : public Texture {
  public:
+  Vec3f modifier;
   ImageTextureWrapMode wrapMode;
   ImageTextureFilterMode filterMode;
 
   CImg<float> image;
 
   ImageTexture(CImg<float> image, ImageTextureWrapMode wrapMode,
-               ImageTextureFilterMode filterMode)
-      : image(image), wrapMode(wrapMode), filterMode(filterMode){};
+               ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f))
+      : image(image), wrapMode(wrapMode), filterMode(filterMode), modifier(modifier){};
   ImageTexture(string file, ImageTextureWrapMode wrapMode,
-               ImageTextureFilterMode filterMode);
+               ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f));
 
-  void applyOn(Intersection *intersection, Vec2f uv, Vec2f dudv = Vec2f(0.0f)) const override;
+  Vec2f get_st(Vec2f uv) const;
+  Vec3f evaluate(Vec2f st) const;
+  Vec3f evaluateNearest(Vec2f st) const;
+  Vec3f evaluateBilinear(Vec2f st) const;
 };
 
 }  // namespace raytrc
