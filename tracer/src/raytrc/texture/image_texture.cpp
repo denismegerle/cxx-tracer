@@ -17,7 +17,7 @@ inline float fqmodf(float a, float b) {
   return (c > 0) ? c : b - c;
 }
 
-inline Vec3f get_n_rgb_from_cimg(const CImg<float>* image, int x, int y) {
+inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
   float r = (*image)(x, y, 0, 0);
   float g = (*image)(x, y, 0, 1);
   float b = (*image)(x, y, 0, 2);
@@ -28,7 +28,7 @@ inline Vec3f get_n_rgb_from_cimg(const CImg<float>* image, int x, int y) {
 ImageTexture::ImageTexture(string file, ImageTextureWrapMode wrapMode,
                            ImageTextureFilterMode filterMode, Vec3f modifier)
     : wrapMode(wrapMode), filterMode(filterMode), modifier(modifier) {
-  image = CImg<float>(file.c_str());
+  image = CImg<uint8_t>(file.c_str());
 };
 
 Vec2f ImageTexture::get_st(Vec2f uv) const {
@@ -89,5 +89,3 @@ Vec3f ImageTexture::evaluateBilinear(Vec2f st) const {
   Vec3f rgb = (1 - b) * rgb12 + b * rgb34;
   return rgb;
 }
-
-// applyOn = [ getSt(uv, dudv) | evaluate(st) | apply to proper vals then... ]

@@ -12,12 +12,13 @@ using namespace std;
 
 namespace raytrc {
 
-class DiffuseTexture : public ImageTexture {
+class NormalTexture : public ImageTexture {
  public:
-  DiffuseTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,
-                 ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f))
+  NormalTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,
+                 ImageTextureFilterMode filterMode,
+                 Vec3f modifier = Vec3f(1.0f))
       : ImageTexture(image, wrapMode, filterMode, modifier){};
-  DiffuseTexture(string file, ImageTextureWrapMode wrapMode,
+  NormalTexture(string file, ImageTextureWrapMode wrapMode,
                  ImageTextureFilterMode filterMode,
                  Vec3f modifier = Vec3f(1.0f))
       : ImageTexture(file, wrapMode, filterMode, modifier){};

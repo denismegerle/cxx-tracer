@@ -27,6 +27,7 @@
 #include "raytrc/texture/const_texture.h"
 #include "raytrc/texture/diffuse_texture.h"
 #include "raytrc/texture/image_texture.h"
+#include "raytrc/texture/normal_texture.h"
 #include "raytrc/texture/mapping/spherical_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/mapping/zero_mapping.h"
@@ -35,8 +36,8 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 960;
-constexpr auto PIXEL_HEIGHT = 540;
+constexpr auto PIXEL_WIDTH = 1920;
+constexpr auto PIXEL_HEIGHT = 1080;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
@@ -49,7 +50,7 @@ constexpr auto N_DEFOCUSRAYS = 1;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
-constexpr auto MAX_RECURSION_DEPTH = 3;
+constexpr auto MAX_RECURSION_DEPTH = 5;
 
 using namespace std;
 using namespace raytrc;
@@ -77,11 +78,13 @@ Diffuse Textures, Ambient Occlusion Mapping,
 - Texture Filtering | Mip Mapping
 - Env Map Filtering
 - Anisotrope Filterung
-- Transparency [semi, alphatest]
 - Procedural textures
 - BVHs, ...
 - rm all using std statements, use namespace specifier, only not use it for
 raytrc and gem
+- implement trilinear filtering + mipmapping...
+- noise textures, for instance for clouds or mountains
+- 
 */
 
 int main() {
@@ -94,6 +97,22 @@ int main() {
 
   auto s_m = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
                                                 Vec2f(2.0f));
+
+  
+  std::string tex_file2(RESOURCES_PATH +
+                       std::string("textures/normal/rainbow.png"));
+  DiffuseTexture tex2(tex_file2, ImageTextureWrapMode::REPEAT,
+                     ImageTextureFilterMode::BILINEAR, Vec3f(10.0f));
+
+  auto s_m2 = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
+                                                Vec2f(1.0f));
+
+  std::string tex_file3(RESOURCES_PATH +
+                        std::string("textures/normal/cell_structure.jpg")); 
+  NormalTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
+                      ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+  auto s_m3 = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
+                                                 Vec2f(1.0f));
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
@@ -117,8 +136,10 @@ int main() {
   auto s2 =
       make_shared<Sphere>(Vec3f(-2.0f, -2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
   auto s2_t =
-      std::make_tuple(s_m, &tex);
+      std::make_tuple(s_m2, &tex2);
   s2->textures.push_back(s2_t);
+  auto s2_t2 = std::make_tuple(s_m3, &tex3);
+  s2->textures.push_back(s2_t2);
 
   auto s3 =
       make_shared<Sphere>(Vec3f(-2.0f, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));

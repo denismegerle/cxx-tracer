@@ -20,9 +20,9 @@ class ImageTexture : public Texture {
   ImageTextureWrapMode wrapMode;
   ImageTextureFilterMode filterMode;
 
-  CImg<float> image;
+  CImg<uint8_t> image;
 
-  ImageTexture(CImg<float> image, ImageTextureWrapMode wrapMode,
+  ImageTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f))
       : image(image), wrapMode(wrapMode), filterMode(filterMode), modifier(modifier){};
   ImageTexture(string file, ImageTextureWrapMode wrapMode,

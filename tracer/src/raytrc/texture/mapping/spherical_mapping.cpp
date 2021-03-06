@@ -15,7 +15,7 @@ Vec2f SphericalMapping::get_uv(Intersection *intersection) const {
   float polar = acos(normal[2]);
 
   float u = 0.5f + azimuth / (2.0f * M_PI);
-  float v = 0.5f + polar / M_PI;
+  float v = polar / M_PI;
 
   return scale.mult(Vec2f(u, v));
 }
