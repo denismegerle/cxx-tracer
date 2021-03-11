@@ -29,6 +29,7 @@
 #include "raytrc/texture/image_texture.h"
 #include "raytrc/texture/normal_texture.h"
 #include "raytrc/texture/mapping/spherical_mapping.h"
+#include "raytrc/texture/mapping/latlng_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/mapping/zero_mapping.h"
 #include "raytrc/texture/texture.h"
@@ -36,21 +37,21 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 1920;
-constexpr auto PIXEL_HEIGHT = 1080;
+constexpr auto PIXEL_WIDTH = 960;
+constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 5;
+constexpr auto N_SUPERSAMPLES = 3;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
-constexpr auto N_SHADOWRAYS = 5;
+constexpr auto N_SHADOWRAYS = 3;
 
 constexpr auto N_DEFOCUSRAYS = 1;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
-constexpr auto MAX_RECURSION_DEPTH = 5;
+constexpr auto MAX_RECURSION_DEPTH = 3;
 
 using namespace std;
 using namespace raytrc;
@@ -104,11 +105,11 @@ int main() {
   DiffuseTexture tex2(tex_file2, ImageTextureWrapMode::REPEAT,
                      ImageTextureFilterMode::BILINEAR, Vec3f(10.0f));
 
-  auto s_m2 = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
+  auto s_m2 = std::make_shared<LatLngMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
                                                 Vec2f(1.0f));
 
   std::string tex_file3(RESOURCES_PATH +
-                        std::string("textures/normal/cell_structure.jpg")); 
+                        std::string("textures/normal/golfball.jpg")); 
   NormalTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m3 = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),

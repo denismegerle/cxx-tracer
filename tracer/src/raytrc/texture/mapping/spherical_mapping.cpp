@@ -11,11 +11,12 @@ using namespace std;
 Vec2f SphericalMapping::get_uv(Intersection *intersection) const {
   Vec3f normal = (intersection->position - center).normalize();
 
-  float azimuth = atan2(normal[1], normal[0]);
-  float polar = acos(normal[2]);
+  float m = 2.0f *
+            std::sqrtf(std::powf(normal[1], 2.0f) + std::powf(normal[2], 2.0f) +
+                       std::powf(1.0f + normal[0], 2.0f));
 
-  float u = 0.5f + azimuth / (2.0f * M_PI);
-  float v = polar / M_PI;
+  float u = normal[1] / m + 0.5f;
+  float v = normal[2] / m + 0.5f;
 
   return scale.mult(Vec2f(u, v));
 }
