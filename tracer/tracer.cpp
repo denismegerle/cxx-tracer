@@ -109,11 +109,11 @@ int main() {
                                                 Vec2f(1.0f));
 
   std::string tex_file3(RESOURCES_PATH +
-                        std::string("textures/normal/golfball.jpg")); 
+                        std::string("textures/normal/stonewall.jpg"));
   NormalTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
-  auto s_m3 = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
-                                                 Vec2f(1.0f));
+  auto s_m3 = std::make_shared<LatLngMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
+                                                 Vec2f(4.0f));
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
