@@ -8,10 +8,7 @@ namespace raytrc {
 
 class SphericalMapping : public TextureMapping {
  public:
-  Vec2f scale;
-  Vec3f center;
-
-  SphericalMapping(Vec3f center, Vec2f scale) : center(center), scale(scale){};
+  SphericalMapping(){};
 
   Vec2f get_uv(Intersection *intersection) const override;
 };

@@ -28,6 +28,7 @@
 #include "raytrc/texture/diffuse_texture.h"
 #include "raytrc/texture/image_texture.h"
 #include "raytrc/texture/normal_texture.h"
+#include "raytrc/texture/environment_texture.h"
 #include "raytrc/texture/mapping/spherical_mapping.h"
 #include "raytrc/texture/mapping/latlng_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
@@ -67,15 +68,11 @@ TODO:
 for all of em
 - properly model cameras...
 - add triangle, cube to object primitives
-- maybe model brdf as class to make interchangeable...
-- anisotropic brdfs
-- Flat/Phong shading für dinge...
 - transmissions depth dependent
-- supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
-stochastisch, blue noise]
+- supersampling noise sampler parametrisierbar machen [uniform, adaptiv, stochastisch, blue noise]
 - evtl. Distributed RT
-- Textures --> Bump-Mapping, Environment Mapping, Shadow-Mapping, Gloss Mapping,
-Diffuse Textures, Ambient Occlusion Mapping,
+- Textures --> Bump-Mapping, Gloss Mapping, Ambient Occlusion Mapping
+- Mappings --> Cube Map, Planar Map, LinearMap, 
 - Texture Filtering | Mip Mapping
 - Env Map Filtering
 - Anisotrope Filterung
@@ -96,8 +93,7 @@ int main() {
   DiffuseTexture tex(tex_file, ImageTextureWrapMode::REPEAT,
                      ImageTextureFilterMode::NEAREST, Vec3f(8.0f));
 
-  auto s_m = std::make_shared<SphericalMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
-                                                Vec2f(2.0f));
+  auto s_m = std::make_shared<SphericalMapping>();
 
   
   std::string tex_file2(RESOURCES_PATH +
@@ -114,6 +110,13 @@ int main() {
                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m3 = std::make_shared<LatLngMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
                                                  Vec2f(4.0f));
+
+  std::string tex_file4(RESOURCES_PATH +
+                        std::string("textures/environment/seaside.jpeg"));
+  EnvironmentTexture tex4(tex_file4, ImageTextureWrapMode::ZERO,
+                     ImageTextureFilterMode::NEAREST, Vec3f(1.0f));
+  auto s_m4 =
+      std::make_shared<SphericalMapping>();
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
@@ -189,6 +192,8 @@ int main() {
       make_shared<AmbientLight>(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
 
   World world(&cam, objects, lightSources);
+  world.envTexture = &tex4;
+  world.envMapping = s_m4;
 
   /* ********** RT CODE ********** */
   uint8_t *frameBuffer = new uint8_t[CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT];
@@ -243,7 +248,15 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
 
   /* 2. CALCULATE INTERSECTION OF RAY WITH (FIRST) WORLD OBJECT */
   Intersection i;
-  if (!world->cast(ray, &i)) return color;  // TODO add env map here...
+  if (!world->cast(ray, &i)) {
+    i.normal = ray->direction;
+    i.material = Material();  // saving RGB of env in material kd
+
+    Vec2f uv = world->envMapping->get_uv(&i);
+    world->envTexture->applyOn(&i, uv);
+
+    return i.material.kd;
+  }
 
   // compute the material parameters of the intersection point
   for (auto mapping_and_texture :

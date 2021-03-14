@@ -6,6 +6,7 @@
 #include "raytrc/light/light_source.h"
 #include "raytrc/geometry/cameras/camera.h"
 
+
 namespace raytrc {
 
 class World {
@@ -13,6 +14,8 @@ class World {
   Camera *camera;
   std::vector<std::shared_ptr<ObjectBase>> objects;
   std::vector<std::shared_ptr<LightSource>> lightSources;
+  Texture *envTexture;
+  std::shared_ptr<TextureMapping> envMapping;
 
   World(){};
   World(Camera *camera,
