@@ -26,13 +26,15 @@
 #include "raytrc/light/sphere_light.h"
 #include "raytrc/texture/const_texture.h"
 #include "raytrc/texture/diffuse_texture.h"
-#include "raytrc/texture/image_texture.h"
-#include "raytrc/texture/normal_texture.h"
 #include "raytrc/texture/environment_texture.h"
-#include "raytrc/texture/mapping/spherical_mapping.h"
+#include "raytrc/texture/image_texture.h"
+#include "raytrc/texture/aocclusion_texture.h"
 #include "raytrc/texture/mapping/latlng_mapping.h"
+#include "raytrc/texture/mapping/spherical_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/mapping/zero_mapping.h"
+#include "raytrc/texture/mapping/cube_mapping.h"
+#include "raytrc/texture/normal_texture.h"
 #include "raytrc/texture/texture.h"
 #include "raytrc/texture/texture_enums.h"
 #include "raytrc/world.h"
@@ -69,10 +71,11 @@ for all of em
 - properly model cameras...
 - add triangle, cube to object primitives
 - transmissions depth dependent
-- supersampling noise sampler parametrisierbar machen [uniform, adaptiv, stochastisch, blue noise]
+- supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
+stochastisch, blue noise]
 - evtl. Distributed RT
-- Textures --> Bump-Mapping, Gloss Mapping, Ambient Occlusion Mapping
-- Mappings --> Cube Map, Planar Map, LinearMap, 
+- Textures --> Gloss Mapping, Roughness Mapping
+- Mappings --> Planar Map, LinearMap
 - Texture Filtering | Mip Mapping
 - Env Map Filtering
 - Anisotrope Filterung
@@ -82,7 +85,6 @@ for all of em
 raytrc and gem
 - implement trilinear filtering + mipmapping...
 - noise textures, for instance for clouds or mountains
-- 
 */
 
 int main() {
@@ -95,34 +97,32 @@ int main() {
 
   auto s_m = std::make_shared<SphericalMapping>();
 
-  
   std::string tex_file2(RESOURCES_PATH +
-                       std::string("textures/normal/rainbow.png"));
+                        std::string("textures/diffuse/obsidian.jpg"));
   DiffuseTexture tex2(tex_file2, ImageTextureWrapMode::REPEAT,
-                     ImageTextureFilterMode::BILINEAR, Vec3f(10.0f));
+                      ImageTextureFilterMode::BILINEAR, Vec3f(10.0f));
 
-  auto s_m2 = std::make_shared<LatLngMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
-                                                Vec2f(1.0f));
+  auto s_m2 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
 
   std::string tex_file3(RESOURCES_PATH +
-                        std::string("textures/normal/stonewall.jpg"));
-  NormalTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
-                      ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
-  auto s_m3 = std::make_shared<LatLngMapping>(Vec3f(-2.0f, -2.0f, 2.0f),
-                                                 Vec2f(4.0f));
+                        std::string("textures/ambient_occlusion/obsidian.jpg"));
+  AmbientOcclusionTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
+                     ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+  auto s_m3 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
 
   std::string tex_file4(RESOURCES_PATH +
-                        std::string("textures/environment/seaside.jpeg"));
+                        std::string("textures/environment/car_scene.jpg"));
   EnvironmentTexture tex4(tex_file4, ImageTextureWrapMode::ZERO,
-                     ImageTextureFilterMode::NEAREST, Vec3f(1.0f));
-  auto s_m4 =
-      std::make_shared<SphericalMapping>();
+                          ImageTextureFilterMode::NEAREST, Vec3f(1.0f));
+  auto s_m4 = std::make_shared<CubeMapping>(Vec2f(1.0f));
+
+
 
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
-  float camDistanceToImagePane = 0.25f;
+  float camDistanceToImagePane = 1.0f;
   SupersamplingPinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH,
                                  PIXEL_HEIGHT, camDistanceToImagePane,
                                  DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
@@ -139,8 +139,7 @@ int main() {
 
   auto s2 =
       make_shared<Sphere>(Vec3f(-2.0f, -2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
-  auto s2_t =
-      std::make_tuple(s_m2, &tex2);
+  auto s2_t = std::make_tuple(s_m2, &tex2);
   s2->textures.push_back(s2_t);
   auto s2_t2 = std::make_tuple(s_m3, &tex3);
   s2->textures.push_back(s2_t2);
@@ -179,10 +178,12 @@ int main() {
                               &ConstTextures::WHITE_RUBBER);
   p4->textures.push_back(p4_t);
 
+  /*
   objects.push_back(p1);
   objects.push_back(p2);
   objects.push_back(p3);
   objects.push_back(p4);
+  */
 
   lightSources.push_back(make_shared<SphereLight>(
       Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));

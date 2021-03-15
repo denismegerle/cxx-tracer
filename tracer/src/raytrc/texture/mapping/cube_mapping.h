@@ -9,9 +9,8 @@ namespace raytrc {
 class CubeMapping : public TextureMapping {
  public:
   Vec2f scale;
-  Vec3f center;
 
-  CubeMapping(Vec3f center, Vec2f scale) : center(center), scale(scale){};
+  CubeMapping(Vec2f scale) : scale(scale){};
 
   Vec2f get_uv(Intersection *intersection) const override;
 };

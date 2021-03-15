@@ -18,9 +18,17 @@ inline float fqmodf(float a, float b) {
 }
 
 inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
-  float r = (*image)(x, y, 0, 0);
-  float g = (*image)(x, y, 0, 1);
-  float b = (*image)(x, y, 0, 2);
+  float r, g, b;
+
+  if (image->spectrum() == 3) {
+    r = (*image)(x, y, 0, 0);
+    g = (*image)(x, y, 0, 1);
+    b = (*image)(x, y, 0, 2);
+  } else if(image->spectrum() == 1) {
+    r = (*image)(x, y, 0, 0);
+    g = (*image)(x, y, 0, 0);
+    b = (*image)(x, y, 0, 0);
+  }
 
   return (1.0f / 255.0f) * Vec3f(r, g, b);
 }
