@@ -38,7 +38,7 @@ Vec3f SphereLight::computeDirectLight(World *world,
             (2.0f * pow(sin(phi / 2.0f), 2.0f)) * W * W;
 
   Vec3f rdPointOnDisc =
-      this->position + R * (z * this->radius * perpendicularToLight);
+      this->position + R * (z * perpendicularToLight);
 
   Vec3f lightDirection = rdPointOnDisc - intersection->position;
 
@@ -50,7 +50,8 @@ Vec3f SphereLight::computeDirectLight(World *world,
         lightDirection);
   if (world->cast(&r, &i) &&
       r.t < 1.0f) {  // obj between this and light blocks the light
-    transmissionFactor = Vec3f(0.0f);
+    //transmissionFactor = Vec3f(0.0f);
+    return Vec3f(0.0f);
   }
 
   Vec3f phongLighting = evaluate_phong(lightDirection, this->diffuse,

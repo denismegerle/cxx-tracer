@@ -29,6 +29,8 @@
 #include "raytrc/texture/environment_texture.h"
 #include "raytrc/texture/image_texture.h"
 #include "raytrc/texture/aocclusion_texture.h"
+#include "raytrc/texture/gloss_texture.h"
+#include "raytrc/texture/specular_texture.h"
 #include "raytrc/texture/mapping/latlng_mapping.h"
 #include "raytrc/texture/mapping/spherical_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
@@ -69,13 +71,11 @@ TODO:
 - centrally execute shadow rays, and only for light sources that need it, not
 for all of em
 - properly model cameras...
-- add triangle, cube to object primitives
+- add triangle, cube, restricted plane to object primitives
 - transmissions depth dependent
 - supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
 stochastisch, blue noise]
 - evtl. Distributed RT
-- Textures --> Gloss Mapping, Roughness Mapping
-- Mappings --> Planar Map, LinearMap
 - Texture Filtering | Mip Mapping
 - Env Map Filtering
 - Anisotrope Filterung
@@ -110,6 +110,19 @@ int main() {
                      ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m3 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
 
+  std::string tex_file5(RESOURCES_PATH +
+                        std::string("textures/specular/black_leather.jpg"));
+  SpecularTexture tex5(tex_file5, ImageTextureWrapMode::REPEAT,
+                               ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+  auto s_m5 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
+
+  std::string tex_file6(RESOURCES_PATH +
+                        std::string("textures/gloss/obsidian.jpg"));
+  GlossTexture tex6(tex_file6, ImageTextureWrapMode::REPEAT,
+                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+  auto s_m6 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
+
+
   std::string tex_file4(RESOURCES_PATH +
                         std::string("textures/environment/car_scene.jpg"));
   EnvironmentTexture tex4(tex_file4, ImageTextureWrapMode::ZERO,
@@ -143,6 +156,10 @@ int main() {
   s2->textures.push_back(s2_t);
   auto s2_t2 = std::make_tuple(s_m3, &tex3);
   s2->textures.push_back(s2_t2);
+  auto s2_t3 = std::make_tuple(s_m5, &tex5);
+  s2->textures.push_back(s2_t3);
+  auto s2_t4 = std::make_tuple(s_m6, &tex6);
+  s2->textures.push_back(s2_t4);
 
   auto s3 =
       make_shared<Sphere>(Vec3f(-2.0f, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
@@ -178,15 +195,13 @@ int main() {
                               &ConstTextures::WHITE_RUBBER);
   p4->textures.push_back(p4_t);
 
-  /*
   objects.push_back(p1);
   objects.push_back(p2);
   objects.push_back(p3);
   objects.push_back(p4);
-  */
-
+  
   lightSources.push_back(make_shared<SphereLight>(
-      Vec3f(-4.0f, 2.0f, 5.0f), 0.33f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
+      Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
   // lightSources.push_back(make_shared<PointLight>(
   //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
   lightSources.push_back(
