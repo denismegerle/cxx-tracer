@@ -37,6 +37,18 @@ ImageTexture::ImageTexture(string file, ImageTextureWrapMode wrapMode,
                            ImageTextureFilterMode filterMode, Vec3f modifier)
     : wrapMode(wrapMode), filterMode(filterMode), modifier(modifier) {
   image = CImg<uint8_t>(file.c_str());
+
+  int w = image.width();
+  int h = image.height();
+
+  if ((w & (w - 1)) == 0 && (h & (h - 1)) == 0) {
+    mipMappable = true;
+    this->createMipmap();
+  }
+};
+
+void ImageTexture::createMipmap() const {
+
 };
 
 Vec2f ImageTexture::get_st(Vec2f uv) const {

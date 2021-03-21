@@ -1,6 +1,8 @@
 
 #include "sphere.h"
 
+#include "raytrc/geometry/objects/aabb.h"
+
 using namespace raytrc;
 
 // needs to return closest intersection point!
@@ -36,3 +38,7 @@ bool Sphere::intersect(Ray *ray, Intersection *intersection) {
 
   return true;
 }
+
+AABB Sphere::getAABB() { 
+  return AABB(position - Vec3f(radius), position + Vec3f(radius));
+};

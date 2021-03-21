@@ -1,6 +1,8 @@
 
 #include "plane.h"
 
+#include "raytrc/geometry/objects/aabb.h"
+
 using namespace raytrc;
 
 // needs to return closest intersection point!
@@ -26,3 +28,5 @@ bool Plane::intersect(Ray *ray, Intersection *intersection) {
   }
   return false;
 }
+
+AABB Plane::getAABB() { return AABB(); };

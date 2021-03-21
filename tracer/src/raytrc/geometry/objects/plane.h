@@ -4,6 +4,7 @@
 #include "raytrc/geometry/intersection.h"
 #include "raytrc/geometry/ray.h"
 #include "object_base.h"
+#include "raytrc/geometry/objects/aabb.h"
 
 using namespace gem;
 
@@ -18,6 +19,7 @@ class Plane : public ObjectBase {
       : ObjectBase(position), normal(normal.normalize()){};
 
   bool intersect(Ray *ray, Intersection *intersection) override;
+  AABB getAABB() override;
 };
 
 }  // namespace raytrc

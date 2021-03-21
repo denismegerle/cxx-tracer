@@ -42,6 +42,8 @@
 #include "raytrc/world.h"
 #include "stb_image_write.h"
 
+#include "raytrc/acceleration/bvh.h"
+
 constexpr auto PIXEL_WIDTH = 960;
 constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
@@ -85,6 +87,8 @@ stochastisch, blue noise]
 raytrc and gem
 - implement trilinear filtering + mipmapping...
 - noise textures, for instance for clouds or mountains
+- add LICENSE
+- maybe pregenerate sampling pattern?
 */
 
 int main() {
@@ -171,6 +175,17 @@ int main() {
   objects.push_back(s2);
   objects.push_back(s3);
 
+  
+  for (int i = 0; i < 1000; i++) {
+    auto s =
+        make_shared<Sphere>(Vec3f((float) i, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+    auto s_t =
+        std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::GOLD);
+    s->textures.push_back(s_t);
+    objects.push_back(s);
+  }
+  
+
   auto p1 =
       make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
   auto p1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
@@ -195,17 +210,27 @@ int main() {
                               &ConstTextures::WHITE_RUBBER);
   p4->textures.push_back(p4_t);
 
+  /*
   objects.push_back(p1);
   objects.push_back(p2);
   objects.push_back(p3);
   objects.push_back(p4);
-  
+  */
+
   lightSources.push_back(make_shared<SphereLight>(
       Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
   // lightSources.push_back(make_shared<PointLight>(
   //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
   lightSources.push_back(
       make_shared<AmbientLight>(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
+
+  /*
+  BVH bvh(objects);
+  std::cout << bvh.root->aabb.min << bvh.root->aabb.max << std::endl;
+  std::cout << bvh.root->left->aabb.min << bvh.root->left->aabb.max
+            << std::endl;
+  return 0;
+  */
 
   World world(&cam, objects, lightSources);
   world.envTexture = &tex4;

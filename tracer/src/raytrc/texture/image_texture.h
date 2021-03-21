@@ -4,6 +4,8 @@
 
 #include "maths/maths.h"
 
+#include <vector>
+
 #include "raytrc/texture/texture.h"
 #include "raytrc/texture/texture_enums.h"
 #include "raytrc/geometry/intersection.h"
@@ -16,17 +18,21 @@ namespace raytrc {
 
 class ImageTexture : public Texture {
  public:
+  bool mipMappable;
   Vec3f modifier;
   ImageTextureWrapMode wrapMode;
   ImageTextureFilterMode filterMode;
 
   CImg<uint8_t> image;
+  std::vector<CImg<uint8_t>> mipmaps;
 
   ImageTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f))
       : image(image), wrapMode(wrapMode), filterMode(filterMode), modifier(modifier){};
   ImageTexture(string file, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f));
+
+  void createMipmap() const;
 
   Vec2f get_st(Vec2f uv) const;
   Vec3f evaluate(Vec2f st) const;

@@ -9,6 +9,7 @@
 #include "raytrc/geometry/ray.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/texture.h"
+#include "raytrc/geometry/objects/aabb.h"
 
 using namespace gem;
 
@@ -24,6 +25,7 @@ class ObjectBase {
 
   /* calculates closest intersection in positive direction */
   virtual bool intersect(Ray *ray, Intersection *intersection) = 0;
+  virtual AABB getAABB() = 0;
 };
 
 }  // namespace raytrc

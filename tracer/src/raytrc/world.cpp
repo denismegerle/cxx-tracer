@@ -3,11 +3,15 @@
 
 #include <vector>
 
+#include "raytrc/acceleration/bvh.h"
+
 using namespace raytrc;
 using namespace gem;
 
 // closest intersection point (with closest object)
-bool World::cast(Ray *ray, Intersection *intersection) { 
+bool World::cast(Ray *ray, Intersection *intersection) {
+  return bvh.cast(ray, intersection);
+
   std::vector<float> tValues;
   bool intersected = false;
 
