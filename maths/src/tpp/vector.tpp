@@ -140,6 +140,17 @@ Vector<T, S> Vector<T, S>::mult(const T scalar) const {
 }
 
 template <typename T, size_t S>
+Vector<T, S> Vector<T, S>::div(const Vector<T, S> other) const {
+  std::array<T, S> div{};
+
+  for (int i = 0; i < this->values.size(); i++) {
+    div[i] = this->values[i] / other.values[i];
+  }
+
+  return Vector<T, S>(div);
+}
+
+template <typename T, size_t S>
 T Vector<T, S>::dot(const Vector<T, S> other) const {
   T prod = 0;
 

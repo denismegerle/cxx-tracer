@@ -35,6 +35,7 @@ class Vector {
   Vector<T, S> negate() const;
   Vector<T, S> mult(const Vector<T, S> other) const;
   Vector<T, S> mult(const T scalar) const;
+  Vector<T, S> div(const Vector<T, S> other) const;
   T dot(const Vector<T, S> other) const;
   T norm(const NormType type = NormType::EUCLIDEAN) const;
 
