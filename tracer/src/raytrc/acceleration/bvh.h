@@ -6,6 +6,7 @@
 #include "raytrc/geometry/intersection.h"
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/geometry/ray.h"
+#include "raytrc/acceleration/acceleration_structure.h"
 
 namespace raytrc {
 
@@ -22,7 +23,7 @@ struct TreeNode {
   };
 };
 
-class BVH {
+class BVH : public AccelerationStructure {
  public:
   std::shared_ptr<TreeNode> root;
 
@@ -30,7 +31,7 @@ class BVH {
 
   void processNode(std::shared_ptr<TreeNode> node,
                    std::vector<std::shared_ptr<ObjectBase>> objects);
-  bool cast(Ray *ray, Intersection *intersection);
+  bool cast(Ray *ray, Intersection *intersection) override;
 };
 
 }  // namespace raytrc

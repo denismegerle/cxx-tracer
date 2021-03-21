@@ -1,6 +1,4 @@
-﻿// tracer.cpp : Defines the entry point for the application.
-
-#include "tracer.h"
+﻿#include "tracer.h"
 
 #include <omp.h>
 
@@ -20,6 +18,7 @@
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/geometry/objects/plane.h"
 #include "raytrc/geometry/objects/sphere.h"
+#include "raytrc/geometry/objects/triangle.h"
 #include "raytrc/geometry/ray.h"
 #include "raytrc/light/ambient_light.h"
 #include "raytrc/light/point_light.h"
@@ -43,6 +42,7 @@
 #include "stb_image_write.h"
 
 #include "raytrc/acceleration/bvh.h"
+#include "raytrc/acceleration/basic_accel.h"
 
 constexpr auto PIXEL_WIDTH = 960;
 constexpr auto PIXEL_HEIGHT = 540;
@@ -73,22 +73,21 @@ TODO:
 - centrally execute shadow rays, and only for light sources that need it, not
 for all of em
 - properly model cameras...
-- add triangle, cube, restricted plane to object primitives
-- transmissions depth dependent
 - supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
 stochastisch, blue noise]
-- evtl. Distributed RT
-- Texture Filtering | Mip Mapping
-- Env Map Filtering
-- Anisotrope Filterung
-- Procedural textures
-- BVHs, ...
+- Procedural textures : Noise textures for instance for clouds/mountains
+- maybe pregenerate sampling pattern?
+
 - rm all using std statements, use namespace specifier, only not use it for
 raytrc and gem
-- implement trilinear filtering + mipmapping...
-- noise textures, for instance for clouds or mountains
-- add LICENSE
-- maybe pregenerate sampling pattern?
+- add readme and make it somehow useful with samples
+- code maid cleanup
+
+FUTURE WORK:
+- make transmission (in shadow rays) depth dependent instead of binary
+- additional acceleration structure (kd-trees for instance)
+- add trilinear filtering, anisotropic filtering and mip mapping
+- add environment map filtering
 */
 
 int main() {
@@ -217,6 +216,17 @@ int main() {
   objects.push_back(p4);
   */
 
+  /*
+  auto t1 =
+      make_shared<Triangle>(Vec3f(-2.0f, 0.0f, 2.0f),
+                            Vec3f(0.0f, 0.0f, 2.0f), Vec3f(-2.0f, 2.0f, 2.0f));
+  auto t1_t =
+      std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::SILVER);
+  t1->textures.push_back(t1_t);
+
+  objects.push_back(t1);
+  */
+
   lightSources.push_back(make_shared<SphereLight>(
       Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
   // lightSources.push_back(make_shared<PointLight>(
@@ -232,7 +242,8 @@ int main() {
   return 0;
   */
 
-  World world(&cam, objects, lightSources);
+  World world(&cam, objects, lightSources,
+              std::make_shared<BVH>(objects));
   world.envTexture = &tex4;
   world.envMapping = s_m4;
 

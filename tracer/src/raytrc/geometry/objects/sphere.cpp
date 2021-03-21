@@ -2,6 +2,8 @@
 #include "sphere.h"
 
 #include "raytrc/geometry/objects/aabb.h"
+#include "raytrc/geometry/ray.h"
+#include "raytrc/geometry/intersection.h"
 
 using namespace raytrc;
 
