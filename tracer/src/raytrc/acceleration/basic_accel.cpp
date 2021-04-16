@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "basic_accel.h"
 
 #include <memory>
@@ -9,7 +11,12 @@
 
 using namespace raytrc;
 
-bool BasicAccel::cast(Ray *ray, Intersection *intersection){
+/*!
+ * Cycling through all objects and returning whether intersection found. If
+ * found, intersection contains the point and material data and the ray is
+ * updated with t.
+ */
+bool BasicAccel::cast(Ray *ray, Intersection *intersection) {
   std::vector<float> tValues;
   bool intersected = false;
 
@@ -18,7 +25,8 @@ bool BasicAccel::cast(Ray *ray, Intersection *intersection){
   for (int i = 0; i < this->objects.size(); i++) {
     tValues.push_back(FLT_MAX);
 
-    if (this->objects[i]->intersect(&rayCopy, &tempIntersection) && rayCopy.t > 0) {
+    if (this->objects[i]->intersect(&rayCopy, &tempIntersection) &&
+        rayCopy.t > 0) {
       tValues[i] = rayCopy.t;
       intersected = true;
     }
