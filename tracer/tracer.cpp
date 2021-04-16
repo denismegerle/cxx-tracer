@@ -13,6 +13,8 @@
 #include "CImg.h"
 #include "config.h"
 #include "maths/maths.h"
+#include "raytrc/acceleration/basic_accel.h"
+#include "raytrc/acceleration/bvh.h"
 #include "raytrc/geometry/cameras/ss_lense_camera.h"
 #include "raytrc/geometry/cameras/ss_pinhole_camera.h"
 #include "raytrc/geometry/objects/object_base.h"
@@ -23,38 +25,36 @@
 #include "raytrc/light/ambient_light.h"
 #include "raytrc/light/point_light.h"
 #include "raytrc/light/sphere_light.h"
+#include "raytrc/sampling/sampler.h"
+#include "raytrc/texture/aocclusion_texture.h"
 #include "raytrc/texture/const_texture.h"
 #include "raytrc/texture/diffuse_texture.h"
 #include "raytrc/texture/environment_texture.h"
-#include "raytrc/texture/image_texture.h"
-#include "raytrc/texture/aocclusion_texture.h"
 #include "raytrc/texture/gloss_texture.h"
-#include "raytrc/texture/specular_texture.h"
+#include "raytrc/texture/image_texture.h"
+#include "raytrc/texture/mapping/cube_mapping.h"
 #include "raytrc/texture/mapping/latlng_mapping.h"
 #include "raytrc/texture/mapping/spherical_mapping.h"
 #include "raytrc/texture/mapping/texture_mapping.h"
 #include "raytrc/texture/mapping/zero_mapping.h"
-#include "raytrc/texture/mapping/cube_mapping.h"
 #include "raytrc/texture/normal_texture.h"
+#include "raytrc/texture/specular_texture.h"
 #include "raytrc/texture/texture.h"
 #include "raytrc/texture/texture_enums.h"
 #include "raytrc/world.h"
 #include "stb_image_write.h"
-
-#include "raytrc/acceleration/bvh.h"
-#include "raytrc/acceleration/basic_accel.h"
 
 constexpr auto PIXEL_WIDTH = 960;
 constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 3;
+constexpr auto N_SUPERSAMPLES = 5;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
 constexpr auto N_SHADOWRAYS = 3;
 
-constexpr auto N_DEFOCUSRAYS = 1;
+constexpr auto N_DEFOCUSRAYS = 2;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
@@ -73,8 +73,6 @@ TODO:
 - centrally execute shadow rays, and only for light sources that need it, not
 for all of em
 - properly model cameras...
-- supersampling noise sampler parametrisierbar machen [uniform, adaptiv,
-stochastisch, blue noise]
 - Procedural textures : Noise textures for instance for clouds/mountains
 - maybe pregenerate sampling pattern?
 
@@ -110,21 +108,20 @@ int main() {
   std::string tex_file3(RESOURCES_PATH +
                         std::string("textures/ambient_occlusion/obsidian.jpg"));
   AmbientOcclusionTexture tex3(tex_file3, ImageTextureWrapMode::REPEAT,
-                     ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+                               ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m3 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
 
   std::string tex_file5(RESOURCES_PATH +
                         std::string("textures/specular/black_leather.jpg"));
   SpecularTexture tex5(tex_file5, ImageTextureWrapMode::REPEAT,
-                               ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m5 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
 
   std::string tex_file6(RESOURCES_PATH +
                         std::string("textures/gloss/obsidian.jpg"));
   GlossTexture tex6(tex_file6, ImageTextureWrapMode::REPEAT,
-                       ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
+                    ImageTextureFilterMode::BILINEAR, Vec3f(1.0f));
   auto s_m6 = std::make_shared<LatLngMapping>(Vec2f(4.0f));
-
 
   std::string tex_file4(RESOURCES_PATH +
                         std::string("textures/environment/car_scene.jpg"));
@@ -132,16 +129,22 @@ int main() {
                           ImageTextureFilterMode::NEAREST, Vec3f(1.0f));
   auto s_m4 = std::make_shared<CubeMapping>(Vec2f(1.0f));
 
-
-
   /* ********** CAMERA CREATION ********** */
   Vec3f camPosition(-4.0f, 0.0f, 3.0f);
   Vec3f camTarget(-2.0f, 0.0f, 2.0f);
   Vec3f camUp(0.0f, 0.0f, 1.0f);
   float camDistanceToImagePane = 1.0f;
-  SupersamplingPinholeCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH,
-                                 PIXEL_HEIGHT, camDistanceToImagePane,
-                                 DEFAULT_FOV, SUPERSAMPLING_VARIANCE);
+
+  Vec2f *sampleMatrix = get_sample_matrix_stochastic(
+      PIXEL_WIDTH, PIXEL_HEIGHT, N_SUPERSAMPLES, SUPERSAMPLING_VARIANCE);
+  // Vec2f *sampleMatrix =
+  //    get_sample_matrix_uniform(PIXEL_WIDTH, PIXEL_HEIGHT, N_SUPERSAMPLES);
+
+  // SUPERSAMPLING_VARIANCE
+  SupersamplingLenseCamera cam(camPosition, camTarget, camUp, PIXEL_WIDTH,
+                               PIXEL_HEIGHT, camDistanceToImagePane,
+                               DEFAULT_FOV, N_SUPERSAMPLES, sampleMatrix, 2.25f,
+                               0.1f);
 
   /* ********** WORLD CREATION ********** */
   std::vector<shared_ptr<ObjectBase>> objects;
@@ -174,16 +177,14 @@ int main() {
   objects.push_back(s2);
   objects.push_back(s3);
 
-  
   for (int i = 0; i < 1000; i++) {
-    auto s =
-        make_shared<Sphere>(Vec3f((float) i, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+    auto s = make_shared<Sphere>(Vec3f((float)i, 2.0f, 2.0f),
+                                 0.5f * tan(M_PI / 4.0f));
     auto s_t =
         std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::GOLD);
     s->textures.push_back(s_t);
     objects.push_back(s);
   }
-  
 
   auto p1 =
       make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
@@ -242,8 +243,7 @@ int main() {
   return 0;
   */
 
-  World world(&cam, objects, lightSources,
-              std::make_shared<BVH>(objects));
+  World world(&cam, objects, lightSources, std::make_shared<BVH>(objects));
   world.envTexture = &tex4;
   world.envMapping = s_m4;
 
@@ -258,7 +258,7 @@ int main() {
         for (int j = 0; j < N_SHADOWRAYS; j++) {
           for (int k = 0; k < N_DEFOCUSRAYS; k++) {
             /* 1. GENERATE PRIMARY RAY FOR THIS PIXEL */
-            Ray primaryRay = cam.generateRay(x, y);
+            Ray primaryRay = cam.generateRay(x, y, i);
 
             // raytrace recursively
             color = color +
@@ -287,6 +287,7 @@ int main() {
   disp.display(cimage).resize(false).move(100, 100).wait(20000);
   cimage.save("raytraced.png");
 
+  delete[] sampleMatrix;
   delete[] frameBuffer;
   return 0;
 }

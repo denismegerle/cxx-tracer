@@ -12,6 +12,7 @@ class PinholeCamera : public Camera {
  public:
   Vec3f imagePaneNormal, imagePaneX, imagePaneY;
   float imagePaneWidth, imagePaneHeight;
+  Vec2f paneTopLeft, paneSize;
 
   float distanceToImagePane;
   float fov;     // field of vision in radians
@@ -19,16 +20,14 @@ class PinholeCamera : public Camera {
 
   int pixelWidth, pixelHeight;
 
-  PinholeCamera(){};
   PinholeCamera(Vec3f position, Vec3f target, Vec3f up, int pixelWidth,
                 int pixelHeight, float distanceToImagePane,
                 float fov = M_PI / 2.0f);
 
-  Ray generateRay(int x, int y);
-  Ray generateRay(int x, int y, float variance);
+  Ray generateRay(int x, int y, int s) override;
 
  protected:
-  Vec2f getUV(int x, int y);
+  Vec2f getUV(float x, float y);
 };
 
 }  // namespace raytrc

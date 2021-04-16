@@ -22,27 +22,25 @@ PinholeCamera::PinholeCamera(Vec3f position, Vec3f target, Vec3f up,
   this->imagePaneY = this->imagePaneX.cross(this->imagePaneNormal).normalize();
   this->imagePaneHeight = 2 * tan(fov / 2.0f) * this->distanceToImagePane;
   this->imagePaneWidth = this->aspect * this->imagePaneHeight;
+
+  this->paneTopLeft =
+      (1.0f / 2.0f) * Vec2f(-this->imagePaneWidth, this->imagePaneHeight);
+  this->paneSize = Vec2f(this->imagePaneWidth, this->imagePaneHeight);
 }
 
-Vec2f PinholeCamera::getUV(int x, int y) {
-  assert(x >= 0 && x < this->pixelWidth);
-  assert(y >= 0 && y < this->pixelHeight);
-
+Vec2f PinholeCamera::getUV(float x, float y) {
   /*
     Standard no-lense pinhole model:
     Calculate the top left of the pane, the pane total dimensions
     and with the given x, y / xtotal, ytotal the image to pane ratio
   */
-  Vec2f paneTopLeft =
-      (1.0f / 2.0f) * Vec2f(-this->imagePaneWidth, this->imagePaneHeight);
-  Vec2f paneSize(this->imagePaneWidth, this->imagePaneHeight);
   Vec2f pixelScale((x + 0.5f) / this->pixelWidth,
                    -(y + 0.5f) / this->pixelHeight);
 
   return paneTopLeft + paneSize.mult(pixelScale);
 }
 
-Ray PinholeCamera::generateRay(int x, int y) {
+Ray PinholeCamera::generateRay(int x, int y, int s) {
   Vec2f uv = this->getUV(x, y);
 
   Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -

@@ -10,17 +10,19 @@ namespace raytrc {
 
 class SupersamplingPinholeCamera : public PinholeCamera {
  public:
-  float samplingVariance;
+  int nSupersamples;
+  Vec2f *samplingMatrix;
+
   SupersamplingPinholeCamera(Vec3f position, Vec3f target, Vec3f up,
                              int pixelWidth, int pixelHeight,
-                             float distanceToImagePane, float fov = M_PI / 2.0f,
-                             float samplingVariance = 1.0f)
+                             float distanceToImagePane, float fov,
+                             int nSupersamples, Vec2f *samplingMatrix)
       : PinholeCamera(position, target, up, pixelWidth, pixelHeight,
                       distanceToImagePane, fov),
-        samplingVariance(samplingVariance){};
-  ;
+        nSupersamples(nSupersamples),
+        samplingMatrix(samplingMatrix){};
 
-  Ray generateRay(int x, int y);
+  Ray generateRay(int x, int y, int s) override;
 };
 
 }  // namespace raytrc
