@@ -1,15 +1,18 @@
-
-#include "raytrc/geometry/cameras/ss_lense_camera.h"
-
-#include <cassert>
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
+#include "ss_lense_camera.h"
 
 #include "maths/maths.h"
+#include "raytrc/sampling/random.h"
 
 using namespace raytrc;
 using namespace gem;
 
-inline double random_double() { return rand() / (RAND_MAX + 1.0); }
-
+/*!
+ * Ray generation in the lense camera is stochastic, uniformly randomly sampling
+ * a point on a (circular) lense that would also be refracted onto the focus
+ * point.
+ */
 Ray SupersamplingLenseCamera::generateRay(int x, int y, int s) {
   Vec2f pixelSizeOnPane(this->imagePaneHeight / this->pixelHeight,
                         this->imagePaneWidth / this->pixelWidth);

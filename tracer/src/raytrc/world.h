@@ -4,7 +4,7 @@
 
 #include "raytrc/acceleration/bvh.h"
 #include "raytrc/acceleration/acceleration_structure.h"
-#include "raytrc/geometry/cameras/camera.h"
+#include "raytrc/cameras/camera.h"
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/light/light_source.h"
 

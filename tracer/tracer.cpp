@@ -1,4 +1,6 @@
-﻿#include "tracer.h"
+﻿/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
+#include "tracer.h"
 
 #include <omp.h>
 
@@ -15,8 +17,8 @@
 #include "maths/maths.h"
 #include "raytrc/acceleration/basic_accel.h"
 #include "raytrc/acceleration/bvh.h"
-#include "raytrc/geometry/cameras/ss_lense_camera.h"
-#include "raytrc/geometry/cameras/ss_pinhole_camera.h"
+#include "raytrc/cameras/ss_lense_camera.h"
+#include "raytrc/cameras/ss_pinhole_camera.h"
 #include "raytrc/geometry/objects/object_base.h"
 #include "raytrc/geometry/objects/plane.h"
 #include "raytrc/geometry/objects/sphere.h"
@@ -73,19 +75,20 @@ TODO:
 - centrally execute shadow rays, and only for light sources that need it, not
 for all of em
 - properly model cameras...
-- Procedural textures : Noise textures for instance for clouds/mountains
-- maybe pregenerate sampling pattern?
 
 - rm all using std statements, use namespace specifier, only not use it for
 raytrc and gem
 - add readme and make it somehow useful with samples
 - code maid cleanup
+- remove warnings
+- add sample pictures
 
 FUTURE WORK:
 - make transmission (in shadow rays) depth dependent instead of binary
 - additional acceleration structure (kd-trees for instance)
 - add trilinear filtering, anisotropic filtering and mip mapping
 - add environment map filtering
+- procedural textures, noise textures for cloud and mountain generation
 */
 
 int main() {

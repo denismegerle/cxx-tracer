@@ -2,9 +2,9 @@
 
 #include "maths/maths.h"
 
-namespace raytrc {
+#include "random.h"
 
-inline double random_double() { return rand() / (RAND_MAX + 1.0); }
+namespace raytrc {
 
 Vec2f *get_sample_matrix_stochastic(int width, int height, int supersamples,
                                  float variance) {
