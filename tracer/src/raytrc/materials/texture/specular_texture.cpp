@@ -1,9 +1,10 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright (c) 2021 heyitsden@github */
+#include "specular_texture.h"
+
 #include <cmath>
 
 #include "CImg.h"
-#include "specular_texture.h"
 #include "maths/maths.h"
 #include "raytrc/geometry/intersection.h"
 

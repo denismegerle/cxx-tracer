@@ -13,6 +13,10 @@ using namespace cimg_library;
 
 namespace raytrc {
 
+/*!
+ * @brief Normal Textures change the normal component of the intersection and
+ * thus the Phong lighting model per point.
+ */
 class NormalTexture : public ImageTexture {
  public:
   NormalTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,

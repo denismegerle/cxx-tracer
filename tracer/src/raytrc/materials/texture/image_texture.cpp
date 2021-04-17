@@ -19,6 +19,10 @@ inline float fqmodf(float a, float b) {
   return (c > 0) ? c : b - c;
 }
 
+/*
+ * Getting property at x, y from texture, texture might be 3 or 1 channel only.
+ * Either way, filling a 3 dimensional vector.
+ */
 inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
   float r, g, b;
 
@@ -26,7 +30,7 @@ inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
     r = (*image)(x, y, 0, 0);
     g = (*image)(x, y, 0, 1);
     b = (*image)(x, y, 0, 2);
-  } else if(image->spectrum() == 1) {
+  } else if (image->spectrum() == 1) {
     r = (*image)(x, y, 0, 0);
     g = (*image)(x, y, 0, 0);
     b = (*image)(x, y, 0, 0);
@@ -35,6 +39,10 @@ inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
   return (1.0f / 255.0f) * Vec3f(r, g, b);
 }
 
+/*!
+ * Simply loading the image via cimg libraries load function and checking its
+ * size for mipMappable.
+ */
 ImageTexture::ImageTexture(std::string file, ImageTextureWrapMode wrapMode,
                            ImageTextureFilterMode filterMode, Vec3f modifier)
     : wrapMode(wrapMode), filterMode(filterMode), modifier(modifier) {
@@ -49,10 +57,18 @@ ImageTexture::ImageTexture(std::string file, ImageTextureWrapMode wrapMode,
   }
 };
 
+/*!
+ * @brief Not yet implemented
+ */
 void ImageTexture::createMipmap() const {
 
 };
 
+/*!
+ * @brief Getting the texture value based on wrapping and filtering mode.
+ * @param uv uv coordinates
+ * @return texture value at uv coordinates
+ */
 Vec2f ImageTexture::get_st(Vec2f uv) const {
   Vec2f st;
 
@@ -76,6 +92,10 @@ Vec2f ImageTexture::get_st(Vec2f uv) const {
   return st;
 };
 
+/*!
+ * Choosing nearest or bilinear filtering mode and getting texture values
+ * accordingly.
+ */
 Vec3f ImageTexture::evaluate(Vec2f st) const {
   switch (filterMode) {
     case ImageTextureFilterMode::NEAREST:

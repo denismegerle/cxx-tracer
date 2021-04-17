@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Copyright (c) 2021 heyitsden@github */ 
+/* Copyright (c) 2021 heyitsden@github */
 #pragma once
 
 #include "maths/maths.h"
@@ -10,6 +10,11 @@ using namespace gem;
 
 namespace raytrc {
 
+/*!
+ * @brief Constant textures are predefined materials that come with all
+ * parameters (except normal definitions), each parameter being constant on each
+ * surface point of an object.
+ */
 class ConstTexture : public Texture {
  public:
   Vec3f ka, kd, ks;  // elem [0,1] -> ambient, diffuse, specular
@@ -36,6 +41,9 @@ class ConstTexture : public Texture {
                Vec2f dudv = Vec2f(0.0f)) const override;
 };
 
+/*!
+ * @brief ConstTextures defines some basic materials.
+*/
 class ConstTextures {
  public:
   static const ConstTexture METAL_RED;

@@ -12,6 +12,11 @@ using namespace raytrc;
 using namespace gem;
 using namespace cimg_library;
 
+/*!
+ * The normal is assumed to be saved in the texture image, RGB=XYZ, in tangent
+ * space, i.e. orthogonal normal points to (0,0,1). These are the typical
+ * pinkish normal maps.
+ */
 void NormalTexture::applyOn(Intersection *intersection, Vec2f uv,
                             Vec2f dudv) const {
   Vec2f st = this->get_st(uv);
