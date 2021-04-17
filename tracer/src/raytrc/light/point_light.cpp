@@ -4,14 +4,13 @@
 
 #include "raytrc/world.h"
 #include "raytrc/light/lighting_model.h"
+#include "raytrc/const.h"
 
 using namespace raytrc;
 using namespace gem;
 
-constexpr auto EPS_SHADOW = 10e-6f;
-
-/*
-according to PHONG lighting model,
+/*!
+ * According to the PHONG lighting model 
 */
 Vec3f PointLight::computeDirectLight(World *world, Intersection *intersection) {
   /* calculating whether we need to cast shadow */

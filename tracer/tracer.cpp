@@ -232,7 +232,7 @@ int main() {
   */
 
   lightSources.push_back(make_shared<SphereLight>(
-      Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.5f), Vec3f(2.0f), Vec3f(3.0f)));
+      Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.0f), Vec3f(3.0f)));
   // lightSources.push_back(make_shared<PointLight>(
   //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
   lightSources.push_back(

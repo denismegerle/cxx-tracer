@@ -3,23 +3,24 @@
 #include "sphere_light.h"
 
 #include "maths/maths.h"
-#include "raytrc/world.h"
+#include "raytrc/const.h"
 #include "raytrc/light/lighting_model.h"
+#include "raytrc/sampling/random.h"
+#include "raytrc/world.h"
 
 using namespace raytrc;
 using namespace gem;
 
-constexpr auto EPS_SHADOW = 10e-6f;
-
-inline double random_double() { return rand() / (RAND_MAX + 1.0); }
-
-/*
-according to PHONG lighting model,
-*/
+/*!
+ * More complex and stochastic light calcuation: Light is modeled as a spherical
+ * source, thus shadow rays can partly reach and partly not reach the light,
+ * generating soft shadows.
+ */
 Vec3f SphereLight::computeDirectLight(World *world,
                                       Intersection *intersection) {
   /* calculating whether we need to cast shadow */
-  Vec3f lightDirectionNormalized = (this->position - intersection->position).normalize();
+  Vec3f lightDirectionNormalized =
+      (this->position - intersection->position).normalize();
   Vec3f perpendicularToLight = lightDirectionNormalized.cross(
       Vec3f(0.0f, 0.0f, 1.0f));  // cross world up vector
   if (perpendicularToLight.norm() == 0) {
@@ -39,8 +40,7 @@ Vec3f SphereLight::computeDirectLight(World *world,
   Mat3f R = Mat3f(1.0f, 1.0f, 1.0f) + sin(phi) * W +
             (2.0f * pow(sin(phi / 2.0f), 2.0f)) * W * W;
 
-  Vec3f rdPointOnDisc =
-      this->position + R * (z * perpendicularToLight);
+  Vec3f rdPointOnDisc = this->position + R * (z * perpendicularToLight);
 
   Vec3f lightDirection = rdPointOnDisc - intersection->position;
 
@@ -52,7 +52,7 @@ Vec3f SphereLight::computeDirectLight(World *world,
         lightDirection);
   if (world->cast(&r, &i) &&
       r.t < 1.0f) {  // obj between this and light blocks the light
-    //transmissionFactor = Vec3f(0.0f);
+    // transmissionFactor = Vec3f(0.0f);
     return Vec3f(0.0f);
   }
 

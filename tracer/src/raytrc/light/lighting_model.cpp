@@ -6,9 +6,13 @@
 #include "raytrc/geometry/intersection.h"
 
 using namespace raytrc;
+using namespace gem;
 
+/*!
+ * Evaluates the phong lighting model, but omits the ambient parameter.
+ */
 Vec3f raytrc::evaluate_phong(Vec3f lightDirection, Vec3f diffuseLight,
-                     Vec3f specularLight, Intersection *intersection) {
+                             Vec3f specularLight, Intersection *intersection) {
   float distance = lightDirection.norm();
   Vec3f lightDirectionNormalized = lightDirection.normalize();
 
