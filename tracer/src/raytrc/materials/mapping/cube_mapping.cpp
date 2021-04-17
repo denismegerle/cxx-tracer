@@ -8,11 +8,18 @@
 #include "raytrc/geometry/intersection.h"
 
 using namespace raytrc;
-using namespace std;
 
 void convert_xyz_to_cube_uv(float x, float y, float z, uint8_t *index, float *u,
                             float *v);
 
+/*!
+ * 3x4 region combined in one image,
+ * [ 0 t 0 0 ]
+ * [ l o r u ]  (o in front, u behind)
+ * [ 0 b 0 0 ]
+ * --> selects the region and then calculates, relative to top left of image,
+ * what the uv coordinates would be. Thus uv is always in [0,1].
+ */
 Vec2f CubeMapping::get_uv(Intersection *intersection) const {
   static const uint8_t FACES_X = 4;
   static const uint8_t FACES_Y = 3;
@@ -33,9 +40,9 @@ Vec2f CubeMapping::get_uv(Intersection *intersection) const {
 
 void convert_xyz_to_cube_uv(float x, float y, float z, uint8_t *index, float *u,
                             float *v) {
-  float absX = fabs(x);
-  float absY = fabs(y);
-  float absZ = fabs(z);
+  float absX = std::fabs(x);
+  float absY = std::fabs(y);
+  float absZ = std::fabs(z);
 
   int isXPositive = x > 0 ? 1 : 0;
   int isYPositive = y > 0 ? 1 : 0;

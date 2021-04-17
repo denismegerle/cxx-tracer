@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "image_texture.h"
 
 #include <algorithm>
@@ -33,7 +35,7 @@ inline Vec3f get_n_rgb_from_cimg(const CImg<uint8_t>* image, int x, int y) {
   return (1.0f / 255.0f) * Vec3f(r, g, b);
 }
 
-ImageTexture::ImageTexture(string file, ImageTextureWrapMode wrapMode,
+ImageTexture::ImageTexture(std::string file, ImageTextureWrapMode wrapMode,
                            ImageTextureFilterMode filterMode, Vec3f modifier)
     : wrapMode(wrapMode), filterMode(filterMode), modifier(modifier) {
   image = CImg<uint8_t>(file.c_str());

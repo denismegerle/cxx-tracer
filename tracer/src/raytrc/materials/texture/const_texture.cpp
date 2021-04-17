@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "const_texture.h"
 
 #include "maths/maths.h"

@@ -11,6 +11,9 @@
 using namespace raytrc;
 using namespace std;
 
+/*!
+ * Map all points to zero. 
+*/
 Vec2f ZeroMapping::get_uv(Intersection *intersection) const {
   return Vec2f(0.0f);
 }

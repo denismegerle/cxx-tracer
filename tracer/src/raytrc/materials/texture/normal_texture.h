@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */ 
 #pragma once
 
 #include "CImg.h"
@@ -8,7 +10,6 @@
 
 using namespace gem;
 using namespace cimg_library;
-using namespace std;
 
 namespace raytrc {
 
@@ -18,7 +19,7 @@ class NormalTexture : public ImageTexture {
                  ImageTextureFilterMode filterMode,
                  Vec3f modifier = Vec3f(1.0f))
       : ImageTexture(image, wrapMode, filterMode, modifier){};
-  NormalTexture(string file, ImageTextureWrapMode wrapMode,
+  NormalTexture(std::string file, ImageTextureWrapMode wrapMode,
                  ImageTextureFilterMode filterMode,
                  Vec3f modifier = Vec3f(1.0f))
       : ImageTexture(file, wrapMode, filterMode, modifier){};

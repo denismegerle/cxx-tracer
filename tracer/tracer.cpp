@@ -39,6 +39,7 @@
 #include "raytrc/materials/mapping/spherical_mapping.h"
 #include "raytrc/materials/mapping/texture_mapping.h"
 #include "raytrc/materials/mapping/zero_mapping.h"
+#include "raytrc/materials/mapping/planar_mapping.h"
 #include "raytrc/materials/texture/normal_texture.h"
 #include "raytrc/materials/texture/specular_texture.h"
 #include "raytrc/materials/texture/texture.h"

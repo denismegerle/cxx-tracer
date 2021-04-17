@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */ 
 #pragma once
 
 #include "maths/maths.h"
@@ -5,7 +7,6 @@
 #include "raytrc/materials/texture/texture.h"
 
 using namespace gem;
-using namespace std;
 
 namespace raytrc {
 

@@ -8,10 +8,16 @@
 
 namespace raytrc {
 
+/*!
+ * @brief Spherical Mapping maps a circular picture as a sphere.
+*/
 class SphericalMapping : public TextureMapping {
  public:
-  SphericalMapping(){};
-
+  /*!
+   * @brief uv coordinate calcuation according to OpenGLs spherical maps
+   * @param intersection intersection with parameters
+   * @return uv coordinates
+  */
   Vec2f get_uv(Intersection *intersection) const override;
 };
 

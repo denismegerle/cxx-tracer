@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */ 
 #pragma once
 
 #include "CImg.h"
@@ -12,7 +14,6 @@
 
 using namespace gem;
 using namespace cimg_library;
-using namespace std;
 
 namespace raytrc {
 
@@ -29,7 +30,7 @@ class ImageTexture : public Texture {
   ImageTexture(CImg<uint8_t> image, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f))
       : image(image), wrapMode(wrapMode), filterMode(filterMode), modifier(modifier){};
-  ImageTexture(string file, ImageTextureWrapMode wrapMode,
+  ImageTexture(std::string file, ImageTextureWrapMode wrapMode,
                ImageTextureFilterMode filterMode, Vec3f modifier = Vec3f(1.0f));
 
   void createMipmap() const;

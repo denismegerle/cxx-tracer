@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "diffuse_texture.h"
 
 #include <cmath>
