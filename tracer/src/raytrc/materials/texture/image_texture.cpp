@@ -102,21 +102,23 @@ Vec3f ImageTexture::evaluate(Vec2f st) const {
       return evaluateNearest(st);
     case ImageTextureFilterMode::BILINEAR:
       return evaluateBilinear(st);
+    default:
+      return Vec3f(0.0f);  // cannot be reached
   }
 }
 
 Vec3f ImageTexture::evaluateNearest(Vec2f st) const {
-  int x = std::roundf(st[0]);
-  int y = std::roundf(st[1]);
+  int x = (int)std::roundf(st[0]);
+  int y = (int)std::roundf(st[1]);
 
   return get_n_rgb_from_cimg(&(this->image), x, y);
 }
 
 Vec3f ImageTexture::evaluateBilinear(Vec2f st) const {
-  int x_floor = std::floorf(st[0]);
-  int y_floor = std::floorf(st[1]);
-  int x_ceil = std::ceilf(st[0]);
-  int y_ceil = std::ceilf(st[1]);
+  int x_floor = (int)std::floorf(st[0]);
+  int y_floor = (int)std::floorf(st[1]);
+  int x_ceil = (int)std::ceilf(st[0]);
+  int y_ceil = (int)std::ceilf(st[1]);
 
   Vec3f rgb1 = get_n_rgb_from_cimg(&(this->image), x_floor, y_floor);
   Vec3f rgb2 = get_n_rgb_from_cimg(&(this->image), x_ceil, y_floor);

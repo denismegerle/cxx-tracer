@@ -20,8 +20,8 @@ struct Intersection {
 
   Material material; /*!< new instance of material, can be altered for each
                         intersection by textures and the intersected object */
-  void* intersectedObject; /*!< can only be written externally (intersect
-                              methods) */
+  void* intersectedObject = nullptr; /*!< can only be written externally
+                              (intersect methods) */
 
   /*!
    * @brief Default intersection to use as a stub for the intersect methods.

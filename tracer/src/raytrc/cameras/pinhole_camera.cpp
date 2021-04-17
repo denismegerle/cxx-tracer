@@ -59,7 +59,7 @@ Vec2f PinholeCamera::getUV(float x, float y) {
  * d = normalize(u*U + v*V - f*W) (f focal length).
  */
 Ray PinholeCamera::generateRay(int x, int y, int s) {
-  Vec2f uv = this->getUV(x, y);
+  Vec2f uv = this->getUV((float)x, (float)y);
 
   Vec3f imagePanePoint = uv[0] * this->imagePaneX + uv[1] * this->imagePaneY -
                          this->distanceToImagePane * this->imagePaneNormal;

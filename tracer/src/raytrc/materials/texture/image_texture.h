@@ -39,7 +39,8 @@ class ImageTexture : public Texture {
       : image(image),
         wrapMode(wrapMode),
         filterMode(filterMode),
-        modifier(modifier){};
+        modifier(modifier),
+        mipMappable(false){};
   /*!
    * @brief Generates image texture by specifying path to image
    * @param file string path to texture file

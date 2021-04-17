@@ -21,7 +21,7 @@ void GlossTexture::applyOn(Intersection *intersection, Vec2f uv,
   Vec2f st = this->get_st(uv);
   Vec3f ks = this->modifier.mult(this->evaluate(st));
 
-  float shininess = pow(2.0, 13.0 * ks[0]);
+  float shininess = std::powf(2.0f, 13.0f * ks[0]);
 
   intersection->material.n = shininess;
 };

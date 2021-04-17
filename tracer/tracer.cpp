@@ -1,6 +1,6 @@
 ﻿/* SPDX-License-Identifier: MIT */
 /* Copyright (c) 2021 heyitsden@github */
-#include "tracer.h"
+#include "tracer.h" /* importing all raytrc headers via this header [only here for readability] */
 
 #include <omp.h>
 
@@ -15,36 +15,6 @@
 #include "CImg.h"
 #include "config.h"
 #include "maths/maths.h"
-#include "raytrc/acceleration/basic_accel.h"
-#include "raytrc/acceleration/bvh.h"
-#include "raytrc/cameras/ss_lense_camera.h"
-#include "raytrc/cameras/ss_pinhole_camera.h"
-#include "raytrc/geometry/objects/object_base.h"
-#include "raytrc/geometry/objects/plane.h"
-#include "raytrc/geometry/objects/sphere.h"
-#include "raytrc/geometry/objects/triangle.h"
-#include "raytrc/geometry/ray.h"
-#include "raytrc/light/ambient_light.h"
-#include "raytrc/light/point_light.h"
-#include "raytrc/light/sphere_light.h"
-#include "raytrc/sampling/sampler.h"
-#include "raytrc/materials/texture/aocclusion_texture.h"
-#include "raytrc/materials/texture/const_texture.h"
-#include "raytrc/materials/texture/diffuse_texture.h"
-#include "raytrc/materials/texture/environment_texture.h"
-#include "raytrc/materials/texture/gloss_texture.h"
-#include "raytrc/materials/texture/image_texture.h"
-#include "raytrc/materials/mapping/cube_mapping.h"
-#include "raytrc/materials/mapping/latlng_mapping.h"
-#include "raytrc/materials/mapping/spherical_mapping.h"
-#include "raytrc/materials/mapping/texture_mapping.h"
-#include "raytrc/materials/mapping/zero_mapping.h"
-#include "raytrc/materials/mapping/planar_mapping.h"
-#include "raytrc/materials/texture/normal_texture.h"
-#include "raytrc/materials/texture/specular_texture.h"
-#include "raytrc/materials/texture/texture.h"
-#include "raytrc/materials/texture/texture_enums.h"
-#include "raytrc/world.h"
 #include "stb_image_write.h"
 
 constexpr auto PIXEL_WIDTH = 960;
@@ -63,7 +33,6 @@ constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
 constexpr auto MAX_RECURSION_DEPTH = 3;
 
-using namespace std;
 using namespace raytrc;
 using namespace gem;
 
@@ -71,26 +40,6 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
                int maxRecursionDepth);
 float gamma_correct(float color, float gamma);
 
-/*
-TODO:
-- centrally execute shadow rays, and only for light sources that need it, not
-for all of em
-- properly model cameras...
-
-- rm all using std statements, use namespace specifier, only not use it for
-raytrc and gem
-- add readme and make it somehow useful with samples
-- code maid cleanup
-- remove warnings
-- add sample pictures
-
-FUTURE WORK:
-- make transmission (in shadow rays) depth dependent instead of binary
-- additional acceleration structure (kd-trees for instance)
-- add trilinear filtering, anisotropic filtering and mip mapping
-- add environment map filtering
-- procedural textures, noise textures for cloud and mountain generation
-*/
 
 int main() {
   std::cout << RESOURCES_PATH << std::endl;
@@ -151,17 +100,17 @@ int main() {
                                0.1f);
 
   /* ********** WORLD CREATION ********** */
-  std::vector<shared_ptr<ObjectBase>> objects;
-  std::vector<shared_ptr<LightSource>> lightSources;
+  std::vector<std::shared_ptr<ObjectBase>> objects;
+  std::vector<std::shared_ptr<LightSource>> lightSources;
 
-  auto s1 =
-      make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s1 = std::make_shared<Sphere>(Vec3f(-2.0f, 0.0f, 2.0f),
+                                     0.5f * tan(M_PI / 4.0f));
   auto s1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::GLASS_SIMPLE);
   s1->textures.push_back(s1_t);
 
-  auto s2 =
-      make_shared<Sphere>(Vec3f(-2.0f, -2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s2 = std::make_shared<Sphere>(Vec3f(-2.0f, -2.0f, 2.0f),
+                                     0.5f * tan(M_PI / 4.0f));
   auto s2_t = std::make_tuple(s_m2, &tex2);
   s2->textures.push_back(s2_t);
   auto s2_t2 = std::make_tuple(s_m3, &tex3);
@@ -171,8 +120,8 @@ int main() {
   auto s2_t4 = std::make_tuple(s_m6, &tex6);
   s2->textures.push_back(s2_t4);
 
-  auto s3 =
-      make_shared<Sphere>(Vec3f(-2.0f, 2.0f, 2.0f), 0.5f * tan(M_PI / 4.0f));
+  auto s3 = std::make_shared<Sphere>(Vec3f(-2.0f, 2.0f, 2.0f),
+                                     0.5f * tan(M_PI / 4.0f));
   auto s3_t =
       std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::GOLD);
   s3->textures.push_back(s3_t);
@@ -182,8 +131,8 @@ int main() {
   objects.push_back(s3);
 
   for (int i = 0; i < 1000; i++) {
-    auto s = make_shared<Sphere>(Vec3f((float)i, 2.0f, 2.0f),
-                                 0.5f * tan(M_PI / 4.0f));
+    auto s = std::make_shared<Sphere>(Vec3f((float)i, 2.0f, 2.0f),
+                                      0.5f * tan(M_PI / 4.0f));
     auto s_t =
         std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::GOLD);
     s->textures.push_back(s_t);
@@ -191,25 +140,25 @@ int main() {
   }
 
   auto p1 =
-      make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
+      std::make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
   auto p1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::WHITE_RUBBER);
   p1->textures.push_back(p1_t);
 
-  auto p2 =
-      make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(-1.0f, 0.0f, 0.0f));
+  auto p2 = std::make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f),
+                                    Vec3f(-1.0f, 0.0f, 0.0f));
   auto p2_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::REFLECTIVE_SIMPLE);
   p2->textures.push_back(p2_t);
 
   auto p3 =
-      make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f), Vec3f(1.0f, 0.0f, 0.0f));
+      std::make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f), Vec3f(1.0f, 0.0f, 0.0f));
   auto p3_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::WHITE_RUBBER);
   p3->textures.push_back(p3_t);
 
-  auto p4 =
-      make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f), Vec3f(0.0f, 0.0f, -1.0f));
+  auto p4 = std::make_shared<Plane>(Vec3f(0.0f, 0.0f, 6.0f),
+                                    Vec3f(0.0f, 0.0f, -1.0f));
   auto p4_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::WHITE_RUBBER);
   p4->textures.push_back(p4_t);
@@ -232,12 +181,12 @@ int main() {
   objects.push_back(t1);
   */
 
-  lightSources.push_back(make_shared<SphereLight>(
+  lightSources.push_back(std::make_shared<SphereLight>(
       Vec3f(-4.0f, 2.0f, 5.0f), 0.75f, Vec3f(2.0f), Vec3f(3.0f)));
   // lightSources.push_back(make_shared<PointLight>(
   //    Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(1.0f), Vec3f(2.0f), Vec3f(3.0f)));
   lightSources.push_back(
-      make_shared<AmbientLight>(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
+      std::make_shared<AmbientLight>(Vec3f(-4.0f, 2.0f, 5.0f), Vec3f(2.0f)));
 
   /*
   BVH bvh(objects);
@@ -367,5 +316,5 @@ Vec3f raytrace(World *world, Ray *ray, int recursionDepth,
 }
 
 float gamma_correct(float color, float gamma) {
-  return min(1.0f, pow(color, 1.0f / gamma));
+  return std::min(1.0f, pow(color, 1.0f / gamma));
 }
