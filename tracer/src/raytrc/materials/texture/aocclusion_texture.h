@@ -3,8 +3,8 @@
 #include "CImg.h"
 #include "maths/maths.h"
 #include "raytrc/geometry/intersection.h"
-#include "raytrc/texture/image_texture.h"
-#include "raytrc/texture/texture_enums.h"
+#include "raytrc/materials/texture/image_texture.h"
+#include "raytrc/materials/texture/texture_enums.h"
 
 using namespace gem;
 using namespace cimg_library;

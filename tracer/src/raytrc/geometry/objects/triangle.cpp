@@ -1,14 +1,20 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "triangle.h"
 
-#include "raytrc/geometry/objects/aabb.h"
-#include "raytrc/geometry/ray.h"
+#include "raytrc/geometry/bounding_volumes/aabb.h"
 #include "raytrc/geometry/intersection.h"
+#include "raytrc/geometry/ray.h"
 
 using namespace raytrc;
 
-// needs to return closest intersection point!
+/*!
+ * Corners define (given predefined rotation [clockwise]) the normal, which is
+ * used to calculate the intersection.
+ */
 bool Triangle::intersect(Ray *ray, Intersection *intersection) {
-  // test from https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+  // test from
+  // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
   Vec3f v1v0 = v1 - v0;
   Vec3f v2v0 = v2 - v0;
   Vec3f rov0 = ray->origin - v0;
@@ -33,6 +39,9 @@ bool Triangle::intersect(Ray *ray, Intersection *intersection) {
   return true;
 }
 
+/*!
+ * Min/max per dimension for each corner point.
+ */
 AABB Triangle::getAABB() {
   Vec3f min, max;
 
@@ -40,6 +49,6 @@ AABB Triangle::getAABB() {
     min[i] = std::min({v0[i], v1[i], v2[i]});
     max[i] = std::max({v0[i], v1[i], v2[i]});
   }
-  
+
   return AABB(min, max);
 };

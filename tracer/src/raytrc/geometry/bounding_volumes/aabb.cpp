@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "aabb.h"
 
 #include <algorithm>
@@ -7,6 +9,9 @@
 using namespace raytrc;
 using namespace gem;
 
+/*!
+ * Combination via min max per dimension
+ */
 AABB AABB::combine(AABB other) {
   Vec3f newMin, newMax;
 
@@ -18,6 +23,9 @@ AABB AABB::combine(AABB other) {
   return AABB(newMin, newMax);
 };
 
+/*!
+ * Maximum dimension calculation
+ */
 uint8_t AABB::getMaxDimension() {
   Vec3f diff = this->max - this->min;
 
@@ -27,6 +35,11 @@ uint8_t AABB::getMaxDimension() {
   return maxDim;
 };
 
+/*!
+ * The intersection test against an AABB is the fast intersection test from the
+ * CGI lecture at KIT (Dachsbauer), somewhat similar to
+ * @link{https://www.iquilezles.org/www/articles/intersectors/intersectors.htm}
+ */
 bool AABB::intersect(Ray *ray) {
   for (int i = 0; i < 3; i++) {
     if (ray->direction[i] == 0 &&

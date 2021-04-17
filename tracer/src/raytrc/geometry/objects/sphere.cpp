@@ -1,14 +1,18 @@
-
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "sphere.h"
 
-#include "raytrc/geometry/objects/aabb.h"
-#include "raytrc/geometry/ray.h"
+#include "raytrc/geometry/bounding_volumes/aabb.h"
 #include "raytrc/geometry/intersection.h"
+#include "raytrc/geometry/ray.h"
 
 using namespace raytrc;
 
-// needs to return closest intersection point!
-bool Sphere::intersect(Ray *ray, Intersection *intersection) { 
+/*!
+ * Closest intersection point of the ray returned, can find non, one (tangent
+ * intersection) or two intersections.
+ */
+bool Sphere::intersect(Ray *ray, Intersection *intersection) {
   float a = ray->direction * ray->direction;
   float b = 2.0f * ray->direction * (ray->origin - this->position);
   float c = (ray->origin - this->position) * (ray->origin - this->position) -
@@ -16,7 +20,7 @@ bool Sphere::intersect(Ray *ray, Intersection *intersection) {
 
   float discriminant = b * b - 4 * a * c;
   if (discriminant < 0) return false;
-  
+
   float t = FLT_MAX;
   if (discriminant == 0) {
     t = -b / (2 * a);
@@ -36,11 +40,13 @@ bool Sphere::intersect(Ray *ray, Intersection *intersection) {
   intersection->normal = (intersection->position - this->position).normalize();
   intersection->negRayVector =
       (ray->origin - intersection->position).normalize();
-  //intersection->material = this->material;
 
   return true;
 }
 
-AABB Sphere::getAABB() { 
+/*!
+ * AABB min = pos - rad, max = pos + rad (for each dimension)
+ */
+AABB Sphere::getAABB() {
   return AABB(position - Vec3f(radius), position + Vec3f(radius));
 };

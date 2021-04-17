@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "raytrc/texture/texture.h"
-#include "raytrc/texture/texture_enums.h"
+#include "raytrc/materials/texture/texture.h"
+#include "raytrc/materials/texture/texture_enums.h"
 #include "raytrc/geometry/intersection.h"
 
 using namespace gem;

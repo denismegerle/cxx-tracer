@@ -2,7 +2,7 @@
 
 #include "maths/maths.h"
 #include "raytrc/geometry/intersection.h"
-#include "raytrc/texture/texture.h"
+#include "raytrc/materials/texture/texture.h"
 
 using namespace gem;
 using namespace std;

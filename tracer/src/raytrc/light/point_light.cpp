@@ -1,4 +1,5 @@
-
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2021 heyitsden@github */
 #include "point_light.h"
 
 #include "raytrc/world.h"

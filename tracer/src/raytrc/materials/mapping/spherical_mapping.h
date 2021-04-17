@@ -2,7 +2,7 @@
 
 #include "maths/maths.h"
 #include "raytrc/geometry/intersection.h"
-#include "raytrc/texture/mapping/texture_mapping.h"
+#include "raytrc/materials/mapping/texture_mapping.h"
 
 namespace raytrc {
 
