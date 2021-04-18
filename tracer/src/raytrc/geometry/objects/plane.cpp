@@ -41,4 +41,4 @@ bool Plane::intersect(Ray *ray, Intersection *intersection) {
  * Planes have an infinite expansion, using zero AABBs to make sure they do not
  * destroy AABB based acceleration structures.
  */
-AABB Plane::getAABB() { return AABB(); };
+AABB Plane::getAABB() { return AABB(Vec3f(-FLT_MAX), Vec3f(+FLT_MAX)); };

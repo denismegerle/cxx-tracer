@@ -12,7 +12,7 @@ namespace raytrc {
 
 class World {
  public:
-  Camera *camera;
+  std::shared_ptr<Camera> camera;
   std::vector<std::shared_ptr<ObjectBase>> objects;
   std::vector<std::shared_ptr<LightSource>> lightSources;
   Texture *envTexture;
@@ -20,7 +20,7 @@ class World {
 
   std::shared_ptr<AccelerationStructure> accelerationStructure;
 
-  World(Camera *camera, std::vector<std::shared_ptr<ObjectBase>> objects,
+  World(std::shared_ptr<Camera> camera, std::vector<std::shared_ptr<ObjectBase>> objects,
         std::vector<std::shared_ptr<LightSource>> lightSources,
         std::shared_ptr<AccelerationStructure> accelerationStructure)
       : camera(camera),

@@ -52,7 +52,7 @@ Vec3f SphereLight::computeDirectLight(World *world,
         lightDirection);
   if (world->cast(&r, &i) &&
       r.t < 1.0f) {  // obj between this and light blocks the light
-    // transmissionFactor = Vec3f(0.0f);
+    // transmissionFactor = world->deriveTransmissionFactor(&r);
     return Vec3f(0.0f);
   }
 

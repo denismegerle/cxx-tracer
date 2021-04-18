@@ -32,7 +32,7 @@ class ConstTexture : public Texture {
         n(n),
         eta(0.0f){};
   ConstTexture(Vec3f ka, Vec3f kd, Vec3f ks, Vec3f kr, Vec3f kt, float n)
-      : ka(ka), kd(kd), ks(ks), kr(kr), kt(kt), n(n), eta(0.0f){};
+      : ka(ka), kd(kd), ks(ks), kr(kr), kt(kt), n(n), eta(1.0f){};
   ConstTexture(Vec3f ka, Vec3f kd, Vec3f ks, Vec3f kr, Vec3f kt, float n,
                float eta)
       : ka(ka), kd(kd), ks(ks), kr(kr), kt(kt), n(n), eta(eta){};
@@ -52,6 +52,7 @@ class ConstTextures {
   static const ConstTexture REFLECTIVE_SIMPLE;
   static const ConstTexture MIRROR_SIMPLE;
   static const ConstTexture GLASS_SIMPLE;
+  static const ConstTexture GLASS_SEMI;
 
   /* materials from devernay
    * (http://devernay.free.fr/cours/opengl/materials.html) */

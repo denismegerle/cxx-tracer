@@ -205,7 +205,7 @@ Vector<T, S> Vector<T, S>::cross(const Vector<T, S> other) const {
 
 template <typename T, size_t S>
 Vector<T, S> Vector<T, S>::normalize() const {
-  // ignoring the cast 0/0/0, TODO: throw exception or return 000?
+  if (this->norm() == 0) return Vec3f(0.0f);
   return this->mult(1.0f / this->norm());
 }
 

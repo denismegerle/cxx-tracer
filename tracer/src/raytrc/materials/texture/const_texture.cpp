@@ -30,8 +30,8 @@ const ConstTexture ConstTextures::SHINY_GREEN(Vec3f(0.0f, 0.3f, 0.0f),
                                               Vec3f(0.0f, 0.0f, 0.0f),
                                               Vec3f(0.0f), Vec3f(0.0f), 5);
 
-const ConstTexture ConstTextures::DIFFUSE_BLUE(Vec3f(0.0f, 0.0f, 0.1f),
-                                               Vec3f(0.0f, 0.0f, 0.7f),
+const ConstTexture ConstTextures::DIFFUSE_BLUE(Vec3f(0.1f, 0.16f, 0.19f),
+                                               Vec3f(0.21f, 0.32f, 0.38f),
                                                Vec3f(0.0f, 0.0f, 0.0f),
                                                Vec3f(0.0f), Vec3f(0.0f), 1);
 
@@ -45,7 +45,10 @@ const ConstTexture ConstTextures::MIRROR_SIMPLE(Vec3f(0.01f), Vec3f(0.0f),
 
 const ConstTexture ConstTextures::GLASS_SIMPLE(Vec3f(0.01f), Vec3f(0.1f),
                                                Vec3f(0.1f), Vec3f(0.0f),
-                                               Vec3f(0.8f), 3, 2.0f);
+                                               Vec3f(0.9f), 3, 2.0f);
+const ConstTexture ConstTextures::GLASS_SEMI(Vec3f(0.00f), Vec3f(0.0f),
+                                               Vec3f(0.0f), Vec3f(0.0f),
+                                               Vec3f(0.1f), 3, 2.0f);
 
 /* materials from devernay (http://devernay.free.fr/cours/opengl/materials.html)
  */
@@ -54,16 +57,16 @@ const ConstTexture ConstTextures::AIR(Vec3f(0.0f), Vec3f(0.0f), Vec3f(0.0f),
 
 const ConstTexture ConstTextures::EMERALD(Vec3f(0.0215f, 0.1745f, 0.0215f),
                                           Vec3f(0.07568f, 0.61424f, 0.07568f),
-                                          Vec3f(0.633f, 0.727811f, 0.633f),
-                                          Vec3f(0.0f), Vec3f(0.0f), 76.8f);
+                                          Vec3f(0.333f, 0.3527811f, 0.333f),
+                                          Vec3f(0.3f), Vec3f(0.3f), 25.8f);
 const ConstTexture ConstTextures::RUBY(Vec3f(0.1745f, 0.01175f, 0.01175f),
                                        Vec3f(0.61424f, 0.04136f, 0.04136f),
                                        Vec3f(0.727811f, 0.626959f, 0.626959f),
-                                       Vec3f(0.0f), Vec3f(0.0f), 76.8f);
+                                       Vec3f(0.1f), Vec3f(0.3f), 76.8f);
 const ConstTexture ConstTextures::BRONZE(Vec3f(0.2125f, 0.1275f, 0.054f),
                                          Vec3f(0.714f, 0.4284f, 0.18144f),
                                          Vec3f(0.393548f, 0.271906f, 0.166721f),
-                                         Vec3f(0.7f), Vec3f(0.0f), 25.6f);
+                                         Vec3f(0.3f), Vec3f(0.0f), 25.6f);
 const ConstTexture ConstTextures::CHROME(Vec3f(0.25f, 0.25f, 0.25f),
                                          Vec3f(0.4f, 0.4f, 0.4f),
                                          Vec3f(0.774597f, 0.774597f, 0.774597f),
@@ -84,16 +87,16 @@ const ConstTexture ConstTextures::CYAN_PLASTIC(
     Vec3f(0.0f, 0.1f, 0.06f), Vec3f(0.0f, 0.50980392f, 0.50980392f),
     Vec3f(0.50196078f, 0.50196078f, 0.50196078f), Vec3f(0.0f), Vec3f(0.0f),
     32.0f);
-const ConstTexture ConstTextures::YELLOW_PLASTIC(Vec3f(0.0f, 0.0f, 0.0f),
-                                                 Vec3f(0.5f, 0.5f, 0.0f),
-                                                 Vec3f(0.60f, 0.60f, 0.50f),
+const ConstTexture ConstTextures::YELLOW_PLASTIC(Vec3f(0.05f, 0.05f, 0.0f),
+                                                 Vec3f(0.5f, 0.5f, 0.4f),
+                                                 Vec3f(0.7f, 0.7f, 0.04f),
                                                  Vec3f(0.0f), Vec3f(0.0f),
                                                  32.0f);
 const ConstTexture ConstTextures::BLACK_RUBBER(Vec3f(0.02f, 0.02f, 0.02f),
                                                Vec3f(0.01f, 0.01f, 0.01f),
                                                Vec3f(0.4f, 0.4f, 0.4f),
                                                Vec3f(0.0f), Vec3f(0.0f), 10.0f);
-const ConstTexture ConstTextures::WHITE_RUBBER(Vec3f(0.05f, 0.05f, 0.05f),
+const ConstTexture ConstTextures::WHITE_RUBBER(Vec3f(0.15f, 0.15f, 0.15f),
                                                Vec3f(0.5f, 0.5f, 0.5f),
                                                Vec3f(0.7f, 0.7f, 0.7f),
                                                Vec3f(0.0f), Vec3f(0.0f), 10.0f);

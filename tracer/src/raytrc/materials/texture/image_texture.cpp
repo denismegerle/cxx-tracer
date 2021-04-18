@@ -16,7 +16,7 @@ using namespace cimg_library;
 
 inline float fqmodf(float a, float b) {
   float c = std::fmodf(a, b);
-  return (c > 0) ? c : b - c;
+  return (c > 0) ? c : b + c;
 }
 
 /*
