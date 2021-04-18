@@ -32,30 +32,25 @@ Dimensionless point lights generate unreal shadows with abprupt edges. More real
 
 ### Cameras & Sampling
 
-<img align="left" width="288" height="162" src="images/features_3_softshadows.png">
-
 For anti-aliasing, a simple implemented supersampling camera shoots multiple rays per pixel. One can generate different sampling patterns via sampling matrices (uniform, stochastic).
 
-<img align="left" width="288" height="162" src="images/features_3_softshadows.png">
+Apart from that, real cameras have imperfections such as non-infinite depth sharpness. In ray tracing, one can model a lense camera model and define a focus pane instead, the picture will then be created by randomly selecting multiple points (per pixel) on the lense that would also focus on the same pane point than the original ray (of that pixel):
 
-<img align="center" width="288" height="162" src="images/features_3_softshadows.png">
+<p float="middle">
+  <img src="images/features_3_softshadows.png" width="288" height="162"  />
+  <img src="images/features_3_softshadows.png" width="288" height="162"  />
+  <img src="images/features_3_softshadows.png" width="288" height="162"  />
+</p>
 
-<img align="right" width="288" height="162" src="images/features_3_softshadows.png">
+### Acceleration Structures
 
-- supersampling vs pinhole and additional focus lense camera
+Ray tracing is based on intersection tests of rays against object primitives. These tests are cheap, but the sheer amount of possible tests is the main cause for long runtimes.
 
+Therefore, reducing the amount of intersection tests is crucial. Bounded volume hierarchies are a standard way for reducing the amount of intersection tests, and this method is implemented here. For further info see Wikipedia.
 
-### TODO1 acceleration structures
-- bvh vs normal time comparison in complex scene
+### Sample in Full Quality
 
-
-
-
-
-
-
-
-
+<img align="middle" src="images/features_4_full.png">
 
 
 ## Future Work
@@ -67,12 +62,12 @@ For anti-aliasing, a simple implemented supersampling camera shoots multiple ray
 
 
 ## References
-- ...
-- panorama_cube_map : https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3APanorama_cube_map.png&psig=AOvVaw1OdJwUL-2OsaZ9N5zPg4gf&ust=1618777477752000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKD1xKGOhvACFQAAAAAdAAAAABAD
-
+- Rock Textures (rock_\*.jpg) by BLACK LODGE GAMES, LLC, licensed under CC0.
+- Crystal Textures (Crystal_\*.jpg) by Joao Paulo (Katsukagi, https://www.patreon.com/gendo) licensed under CC0
+- Skybox Cube Texture (skybox_cube_texture.jpg) by Prof. Dr. Stefan Röttger (http://schorsch.efi.fh-nuernberg.de/roettger/index.php/Computergrafik/EnvironmentMapping) licensed under CC0-Attribution-NonCommercial
+- Milky Way Texture (milky_way.jpg) by ESO licensed under CC Attribution 4.0 International (https://commons.wikimedia.org/wiki/File:ESO_-_Milky_Way.jpg)
 
 ## TODO
 - add documentation generation via (xyz idk which stuff)
 - maybe docker?
-- add references
 - cleanup rest of repo and publish

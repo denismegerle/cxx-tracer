@@ -22,7 +22,7 @@ constexpr auto PIXEL_HEIGHT = 1080;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 1;
+constexpr auto N_SUPERSAMPLES = 10;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
 constexpr auto N_SHADOWRAYS = 10;
@@ -120,16 +120,18 @@ int main() {
   std::shared_ptr<Camera> cam =
   std::make_shared<SupersamplingLenseCamera>(camPosition, camTarget, camUp,
   PIXEL_WIDTH, PIXEL_HEIGHT, camDistanceToImagePane, DEFAULT_FOV,
-  N_SUPERSAMPLES, sampleMatrix, 2.25f, 0.1f);
+  N_SUPERSAMPLES, sampleMatrix, 2.0f, 0.1f);  // 3.5 | 6.0
   */
-  /*
+
   std::shared_ptr<Camera> cam = std::make_shared<SupersamplingPinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
       camDistanceToImagePane, DEFAULT_FOV, N_SUPERSAMPLES, sampleMatrix);
-  */
+  
+  /*
   std::shared_ptr<Camera> cam = std::make_shared<PinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
       camDistanceToImagePane, DEFAULT_FOV);
+  */
 
   /* ********** WORLD CREATION ********** */
   std::vector<std::shared_ptr<ObjectBase>> objects;
