@@ -138,25 +138,20 @@ int main() {
   // ground
   auto p1 =
       std::make_shared<Plane>(Vec3f(0.0f, 0.0f, 0.0f), Vec3f(0.0f, 0.0f, 1.0f));
-  /*
   auto p1_t1 = std::make_tuple(tex_rock_diffuse_mapping, &tex_rock_diffuse);
   p1->textures.push_back(p1_t1);
   auto p1_t2 = std::make_tuple(tex_rock_normal_mapping, &tex_rock_normal);
   p1->textures.push_back(p1_t2);
-  */
-  auto p1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
-                              &ConstTextures::WHITE_RUBBER);
-  p1->textures.push_back(p1_t);
-
+  
   // backside
   auto p2 =
       std::make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f), Vec3f(1.0f, 0.0f, 0.0f));
   auto p2_t = std::make_tuple(std::make_shared<ZeroMapping>(),
-                              &ConstTextures::WHITE_RUBBER);
+                              &ConstTextures::DIFFUSE_BLUE);
   p2->textures.push_back(p2_t);
 
   objects.push_back(p1);
-  objects.push_back(p2);
+  //objects.push_back(p2);
 
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -202,9 +197,7 @@ int main() {
             }
             break;
         }
-        // auto s_t = std::make_tuple(mpg, tex);
-        auto s_t = std::make_tuple(std::make_shared<ZeroMapping>(),
-                                   &ConstTextures::WHITE_RUBBER);
+        auto s_t = std::make_tuple(mpg, tex);
 
         s->textures.push_back(s_t);
         objects.push_back(s);
@@ -213,29 +206,16 @@ int main() {
   }
 
   auto s1 = std::make_shared<Sphere>(Vec3f(-3.0f, 1.0f, 0.5f), 0.5f);
-  /*
   auto s1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::MIRROR_SIMPLE);
   s1->textures.push_back(s1_t);
-  */
-  auto s1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
-                              &ConstTextures::WHITE_RUBBER);
-  s1->textures.push_back(s1_t);
 
   auto s2 = std::make_shared<Sphere>(Vec3f(-2.0f, -0.75f, 0.5f), 0.5f);
-  /*
   auto s2_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::GLASS_SIMPLE);
-  s2->textures.push_back(s2_t); */
-  auto s2_t = std::make_tuple(std::make_shared<ZeroMapping>(),
-                              &ConstTextures::WHITE_RUBBER);
   s2->textures.push_back(s2_t);
 
   auto s3 = std::make_shared<Sphere>(Vec3f(-1.5f, 0.5f, 0.5f), 0.5f);
-  auto s3_t0 = std::make_tuple(std::make_shared<ZeroMapping>(),
-                               &ConstTextures::WHITE_RUBBER);
-  s3->textures.push_back(s3_t0);
-  /*
   auto s3_t0 = std::make_tuple(std::make_shared<ZeroMapping>(),
                                &ConstTextures::GLASS_SEMI);
   s3->textures.push_back(s3_t0);
@@ -247,7 +227,6 @@ int main() {
   auto s3_t3 =
       std::make_tuple(tex_crystal_specular_mapping, &tex_crystal_normal);
   s3->textures.push_back(s3_t3);
-  */
 
   objects.push_back(s1);
   objects.push_back(s2);
@@ -257,14 +236,10 @@ int main() {
                                        Vec3f(-2.5f, -2.0f, 1.0f),
                                        Vec3f(-2.5f, -1.0f, 0.0f));
   auto t1_t =
-      std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::WHITE_RUBBER);
-  t1->textures.push_back(t1_t);
-  /*
-  auto t1_t =
       std::make_tuple(std::make_shared<ZeroMapping>(), &ConstTextures::BRONZE);
   t1->textures.push_back(t1_t);
   auto t1_t1 = std::make_tuple(tex_bronze_normal_mapping, &tex_bronze_normal);
-  t1->textures.push_back(t1_t1); */
+  t1->textures.push_back(t1_t1);
 
   objects.push_back(t1);
 
@@ -278,8 +253,8 @@ int main() {
       std::make_shared<AmbientLight>(Vec3f(0.0f), Vec3f(1.5f)));
 
   World world(cam, objects, lightSources, std::make_shared<BVH>(objects));
-  //world.envTexture = &tex_environ_diffuse;
-  //world.envMapping = tex_environ_diffuse_mapping;
+  world.envTexture = &tex_environ_diffuse;
+  world.envMapping = tex_environ_diffuse_mapping;
 
   uint8_t *frameBuffer = new uint8_t[CHANNEL * PIXEL_WIDTH * PIXEL_HEIGHT];
 
