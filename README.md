@@ -13,11 +13,12 @@ Used concepts:
 This project implements a custom ray tracer providing many features, with a simple own maths/vector library.
 
 ### Objects
+
+<img align="right" width="384" height="216" src="images/features_1_objects.png">
+
 Implemented are planes, spheres and triangles. Easily extensible by just defining the appropriate intersection test and an objects axis-aligned bounding box per object.
 
-<img align="right" width="192" height="108" src="images/features_1_objects.png">
-
-### TODO5 textures and mappings
+### Textures & Mappings
 - same texture different mapping (two to three objects)
 - as an example normal and diffuse texture mapping
 
