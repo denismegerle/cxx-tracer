@@ -14,13 +14,13 @@ This project implements a custom ray tracer providing many features, with a simp
 
 ### Objects
 
-<img align="right" width="384" height="216" src="images/features_1_objects.png">
+<img align="right" width="288" height="162" src="images/features_1_objects.png">
 
 Implemented are planes, spheres and triangles. Easily extensible by just defining the appropriate intersection test and an objects axis-aligned bounding box per object.
 
 ### Textures & Mappings
 
-<img align="left" width="384" height="216" src="images/features_2_texmaps.png">
+<img align="left" width="288" height="162" src="images/features_2_texmaps.png">
 
 Apart from reflexion and refraction, many texture types such as Diffuse, Normal, Ambient Occlusion are supported. Each texture can be mapped onto an object according to a mapping, similarly to OpenGL. Therefore CubeMaps, SphericalMaps, Equidistant Projections etc can be used for all objects. If rays hit nothing, the lighting value is read from an environment map instead.
 
