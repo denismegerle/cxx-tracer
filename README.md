@@ -24,14 +24,26 @@ Implemented are planes, spheres and triangles. Easily extensible by just definin
 
 Apart from reflexion and refraction, many texture types such as Diffuse, Normal, Ambient Occlusion are supported. Each texture can be mapped onto an object according to a mapping, similarly to OpenGL. Therefore CubeMaps, SphericalMaps, Equidistant Projections etc can be used for all objects. If rays hit nothing, the lighting value is read from an environment map instead.
 
-### TODO4 lights
-- point vs sphere lighting, i.e. soft shadows
+### Soft Shadow Lighting
 
-### TODO2 cameras
+<img align="right" width="288" height="162" src="images/features_3_softshadows.png">
+
+Dimensionless point lights generate unreal shadows with abprupt edges. More realistic light sources have dimensions and create gradual shadows. In this case, many shadow rays are shot instead of just one, averaging over generated outputs.
+
+### Cameras & Sampling
+
+<img align="left" width="288" height="162" src="images/features_3_softshadows.png">
+
+For anti-aliasing, a simple implemented supersampling camera shoots multiple rays per pixel. One can generate different sampling patterns via sampling matrices (uniform, stochastic).
+
+<img align="left" width="288" height="162" src="images/features_3_softshadows.png">
+
+<img align="center" width="288" height="162" src="images/features_3_softshadows.png">
+
+<img align="right" width="288" height="162" src="images/features_3_softshadows.png">
+
 - supersampling vs pinhole and additional focus lense camera
 
-### TODO8 sampling
-- same ray amount with different sampling matrices (uniform vs stochastic)
 
 ### TODO1 acceleration structures
 - bvh vs normal time comparison in complex scene

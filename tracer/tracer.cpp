@@ -25,7 +25,7 @@ constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 constexpr auto N_SUPERSAMPLES = 1;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
-constexpr auto N_SHADOWRAYS = 1;
+constexpr auto N_SHADOWRAYS = 10;
 
 constexpr auto N_DEFOCUSRAYS = 1;
 
@@ -142,7 +142,7 @@ int main() {
   p1->textures.push_back(p1_t1);
   auto p1_t2 = std::make_tuple(tex_rock_normal_mapping, &tex_rock_normal);
   p1->textures.push_back(p1_t2);
-  
+
   // backside
   auto p2 =
       std::make_shared<Plane>(Vec3f(5.0f, 0.0f, 0.0f), Vec3f(1.0f, 0.0f, 0.0f));
@@ -151,7 +151,7 @@ int main() {
   p2->textures.push_back(p2_t);
 
   objects.push_back(p1);
-  //objects.push_back(p2);
+  // objects.push_back(p2);
 
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 10; j++) {
@@ -243,12 +243,8 @@ int main() {
 
   objects.push_back(t1);
 
-  /*
   lightSources.push_back(std::make_shared<SphereLight>(
       Vec3f(-2.5f, 0.5f, 3.0f), 10.0f, Vec3f(6.0f), Vec3f(6.0f)));
-      */
-  lightSources.push_back(std::make_shared<PointLight>(
-      Vec3f(-2.5f, 0.5f, 3.0f), Vec3f(6.0f), Vec3f(6.0f)));
   lightSources.push_back(
       std::make_shared<AmbientLight>(Vec3f(0.0f), Vec3f(1.5f)));
 
