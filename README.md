@@ -66,6 +66,10 @@ Therefore, reducing the amount of intersection tests is crucial. Bounded volume 
 - Crystal Textures (Crystal_\*.jpg) by Joao Paulo (Katsukagi, https://www.patreon.com/gendo) licensed under CC0
 - Skybox Cube Texture (skybox_cube_texture.jpg) by Prof. Dr. Stefan Röttger (http://schorsch.efi.fh-nuernberg.de/roettger/index.php/Computergrafik/EnvironmentMapping) licensed under CC0-Attribution-NonCommercial
 - Milky Way Texture (milky_way.jpg) by ESO licensed under CC Attribution 4.0 International (https://commons.wikimedia.org/wiki/File:ESO_-_Milky_Way.jpg)
+- De Greve, Bram. "Reflections and refractions in ray tracing." Retrived Oct 16 (2006): 2014.
+- Thrane, Niels, and Lars Ole Simonsen. "A comparison of acceleration structures for GPU assisted ray tracing." (2005).
+- Weghorst, Hank, Gary Hooper, and Donald P. Greenberg. "Improved computational methods for ray tracing." ACM Transactions on Graphics (TOG) 3.1 (1984): 52-69.
+- COMP238: Raster Graphics - Spherical, Cubic, and Parabolic Environment Mappings by Paul Zimmons - December 10, 1999 (https://cgvr.informatik.uni-bremen.de/teaching/cg_literatur/Spherical,%20Cubic,%20and%20Parabolic%20Environment%20Mappings.pdf)
 
 ## TODO
 - add documentation generation via (xyz idk which stuff)

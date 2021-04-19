@@ -22,12 +22,12 @@ constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 5;
+constexpr auto N_SUPERSAMPLES = 1;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
-constexpr auto N_SHADOWRAYS = 5;
+constexpr auto N_SHADOWRAYS = 1;
 
-constexpr auto N_DEFOCUSRAYS = 5;
+constexpr auto N_DEFOCUSRAYS = 1;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
@@ -45,7 +45,12 @@ int main() {
   std::cout << RESOURCES_PATH << std::endl;
   std::srand(25);
 
-  Vec2f *sphereLocationSamples = get_sample_matrix_stochastic(10, 10, 2, 0.9f);
+  int smallSpheresDim = 10;
+  int smallSpheresSamples = 2;
+  float smallSpheresVariance = 0.9f;
+  Vec2f *sphereLocationSamples =
+      get_sample_matrix_stochastic(smallSpheresDim, smallSpheresDim,
+                                   smallSpheresSamples, smallSpheresVariance);
 
   /* ********** TEXTURE LOADING ********** */
   std::string tex_rock_diffuse_file(
@@ -116,19 +121,16 @@ int main() {
   Vec2f *sampleMatrix = get_sample_matrix_stochastic(
       PIXEL_WIDTH, PIXEL_HEIGHT, N_SUPERSAMPLES, SUPERSAMPLING_VARIANCE);
 
-  
-  std::shared_ptr<Camera> cam =
-  std::make_shared<SupersamplingLenseCamera>(camPosition, camTarget, camUp,
-  PIXEL_WIDTH, PIXEL_HEIGHT, camDistanceToImagePane, DEFAULT_FOV,
-  N_SUPERSAMPLES, sampleMatrix, 5.0f, 0.5f);  // 3.5 | 6.0
-  
-
-  /*
   std::shared_ptr<Camera> cam = std::make_shared<SupersamplingPinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
       camDistanceToImagePane, DEFAULT_FOV, N_SUPERSAMPLES, sampleMatrix);
-  */
-  /*
+
+  /* other cameras to be used
+  std::shared_ptr<Camera> cam = std::make_shared<SupersamplingLenseCamera>(
+      camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
+      camDistanceToImagePane, DEFAULT_FOV, N_SUPERSAMPLES, sampleMatrix, 5.0f,
+      0.5f);  // 3.5 | 6.0
+
   std::shared_ptr<Camera> cam = std::make_shared<PinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
       camDistanceToImagePane, DEFAULT_FOV);
@@ -153,14 +155,21 @@ int main() {
                               &ConstTextures::DIFFUSE_BLUE);
   p2->textures.push_back(p2_t);
 
-  objects.push_back(p1);
+  // objects.push_back(p1);
   // objects.push_back(p2);
 
-  for (int i = 0; i < 10; i++) {
-    for (int j = 0; j < 10; j++) {
-      for (int k = 0; k < 2; k++) {
-        float x = sphereLocationSamples[i * 2 * 10 + j * 2 + k][0] - 5.0f;
-        float y = sphereLocationSamples[i * 2 * 10 + j * 2 + k][1] - 5.0f;
+  // randomly distributed small spheres
+  for (int i = 0; i < smallSpheresDim; i++) {
+    for (int j = 0; j < smallSpheresDim; j++) {
+      for (int k = 0; k < smallSpheresSamples; k++) {
+        float x =
+            sphereLocationSamples[i * smallSpheresSamples * smallSpheresDim +
+                                  j * smallSpheresSamples + k][0] -
+            0.5f * smallSpheresDim;
+        float y =
+            sphereLocationSamples[i * smallSpheresSamples * smallSpheresDim +
+                                  j * smallSpheresSamples + k][1] -
+            0.5f * smallSpheresDim;
 
         auto s = std::make_shared<Sphere>(Vec3f(x, y, 0.1f), 0.1f);
 
@@ -208,6 +217,7 @@ int main() {
     }
   }
 
+  // big spheres
   auto s1 = std::make_shared<Sphere>(Vec3f(-3.0f, 1.0f, 0.5f), 0.5f);
   auto s1_t = std::make_tuple(std::make_shared<ZeroMapping>(),
                               &ConstTextures::MIRROR_SIMPLE);
@@ -235,6 +245,7 @@ int main() {
   objects.push_back(s2);
   objects.push_back(s3);
 
+  // triangle
   auto t1 = std::make_shared<Triangle>(Vec3f(-3.0f, -2.0f, 0.0f),
                                        Vec3f(-2.5f, -2.0f, 1.0f),
                                        Vec3f(-2.5f, -1.0f, 0.0f));
@@ -246,11 +257,14 @@ int main() {
 
   objects.push_back(t1);
 
+  /* ********** LIGHT SOURCES CREATION ********** */
   lightSources.push_back(std::make_shared<SphereLight>(
       Vec3f(-2.5f, 0.5f, 3.0f), 10.0f, Vec3f(6.0f), Vec3f(6.0f)));
   lightSources.push_back(
       std::make_shared<AmbientLight>(Vec3f(0.0f), Vec3f(1.5f)));
 
+  /* ********** GENERATE PICTURE ********** */
+  /* ************************************** */
   World world(cam, objects, lightSources, std::make_shared<BVH>(objects));
   world.envTexture = &tex_environ_diffuse;
   world.envMapping = tex_environ_diffuse_mapping;
