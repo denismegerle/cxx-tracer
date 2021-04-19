@@ -6,8 +6,8 @@ Used concepts:
 - C++ (basics, object orientation specifics, templates, project setups, ...)
 - OMP/SIMD
 - CMake (setup, inclusion and generation of libraries, fetching, ...)
-- (Doxygen, Docker, Sphinx, ...?)
-
+- Doxygen, Sphinx
+- Advanced Computer Graphics
 
 ## Implemented Features
 This project implements a custom ray tracer providing many features, with a simple own maths/vector library.
@@ -70,8 +70,3 @@ Therefore, reducing the amount of intersection tests is crucial. Bounded volume 
 - Thrane, Niels, and Lars Ole Simonsen. "A comparison of acceleration structures for GPU assisted ray tracing." (2005).
 - Weghorst, Hank, Gary Hooper, and Donald P. Greenberg. "Improved computational methods for ray tracing." ACM Transactions on Graphics (TOG) 3.1 (1984): 52-69.
 - COMP238: Raster Graphics - Spherical, Cubic, and Parabolic Environment Mappings by Paul Zimmons - December 10, 1999 (https://cgvr.informatik.uni-bremen.de/teaching/cg_literatur/Spherical,%20Cubic,%20and%20Parabolic%20Environment%20Mappings.pdf)
-
-## TODO
-- add documentation generation via (xyz idk which stuff)
-- maybe docker?
-- cleanup rest of repo and publish
