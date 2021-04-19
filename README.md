@@ -37,9 +37,9 @@ For anti-aliasing, a simple implemented supersampling camera shoots multiple ray
 Apart from that, real cameras have imperfections such as non-infinite depth sharpness. In ray tracing, one can model a lense camera model and define a focus pane instead, the picture will then be created by randomly selecting multiple points (per pixel) on the lense that would also focus on the same pane point than the original ray (of that pixel):
 
 <p float="middle">
-  <img src="images/features_3_softshadows.png" width="288" height="162"  />
-  <img src="images/features_3_softshadows.png" width="288" height="162"  />
-  <img src="images/features_3_softshadows.png" width="288" height="162"  />
+  <img src="images/features_4_fp20.png" width="192" height="108"  />
+  <img src="images/features_4_fp35.png" width="192" height="108"  />
+  <img src="images/features_4_fp50.png" width="192" height="108"  />
 </p>
 
 ### Acceleration Structures
@@ -50,7 +50,7 @@ Therefore, reducing the amount of intersection tests is crucial. Bounded volume 
 
 ### Sample in Full Quality
 
-<img align="middle" src="images/features_4_full.png">
+<img align="middle" src="images/features_5_full.png">
 
 
 ## Future Work

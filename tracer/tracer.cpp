@@ -17,21 +17,21 @@
 #include "maths/maths.h"
 #include "stb_image_write.h"
 
-constexpr auto PIXEL_WIDTH = 1920;
-constexpr auto PIXEL_HEIGHT = 1080;
+constexpr auto PIXEL_WIDTH = 960;
+constexpr auto PIXEL_HEIGHT = 540;
 constexpr auto CHANNEL = 3;
 constexpr auto DEFAULT_FOV = M_PI / 2.0f;
 
-constexpr auto N_SUPERSAMPLES = 10;
+constexpr auto N_SUPERSAMPLES = 5;
 constexpr auto SUPERSAMPLING_VARIANCE = 1.0f;
 
-constexpr auto N_SHADOWRAYS = 10;
+constexpr auto N_SHADOWRAYS = 5;
 
-constexpr auto N_DEFOCUSRAYS = 1;
+constexpr auto N_DEFOCUSRAYS = 5;
 
 constexpr auto REFLECTION_ON = true;
 constexpr auto TRANSMISSION_ON = true;
-constexpr auto MAX_RECURSION_DEPTH = 6;
+constexpr auto MAX_RECURSION_DEPTH = 3;
 
 using namespace raytrc;
 using namespace gem;
@@ -116,17 +116,18 @@ int main() {
   Vec2f *sampleMatrix = get_sample_matrix_stochastic(
       PIXEL_WIDTH, PIXEL_HEIGHT, N_SUPERSAMPLES, SUPERSAMPLING_VARIANCE);
 
-  /*
+  
   std::shared_ptr<Camera> cam =
   std::make_shared<SupersamplingLenseCamera>(camPosition, camTarget, camUp,
   PIXEL_WIDTH, PIXEL_HEIGHT, camDistanceToImagePane, DEFAULT_FOV,
-  N_SUPERSAMPLES, sampleMatrix, 2.0f, 0.1f);  // 3.5 | 6.0
-  */
+  N_SUPERSAMPLES, sampleMatrix, 5.0f, 0.5f);  // 3.5 | 6.0
+  
 
+  /*
   std::shared_ptr<Camera> cam = std::make_shared<SupersamplingPinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
       camDistanceToImagePane, DEFAULT_FOV, N_SUPERSAMPLES, sampleMatrix);
-  
+  */
   /*
   std::shared_ptr<Camera> cam = std::make_shared<PinholeCamera>(
       camPosition, camTarget, camUp, PIXEL_WIDTH, PIXEL_HEIGHT,
